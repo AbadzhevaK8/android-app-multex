@@ -1,7 +1,7 @@
 
 package com.example.multex.ui.screens
-import androidx.compose.runtime.LaunchedEffect
 
+import androidx.compose.runtime.LaunchedEffect
 import android.content.Intent
 import android.graphics.ColorMatrix as AndroidColorMatrix
 import android.widget.Toast
@@ -20,8 +20,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -46,6 +50,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.multex.R
 import com.example.multex.SharedViewModel
@@ -55,14 +60,14 @@ import dev.shreyaspatil.capturable.controller.rememberCaptureController
 import kotlinx.coroutines.launch
 
 @Composable
-fun EditorScreen(viewModel: SharedViewModel, navController: androidx.navigation.NavController? = null) {
+fun EditorScreen(viewModel: SharedViewModel, navController: NavController) {
     val imageUri1 by viewModel.imageUri1.collectAsState()
     val imageUri2 by viewModel.imageUri2.collectAsState()
+    val blendMode by viewModel.blendMode.collectAsState()
 
-    // Если изображения не выбраны, возвращаем пользователя на экран выбора
     if (imageUri1 == null || imageUri2 == null) {
         LaunchedEffect(Unit) {
-            navController?.navigate("image_selection") {
+            navController.navigate("image_selection") {
                 popUpTo("editor") { inclusive = true }
             }
         }
@@ -73,18 +78,14 @@ fun EditorScreen(viewModel: SharedViewModel, navController: androidx.navigation.
     }
 
     var alpha by remember { mutableFloatStateOf(1f) }
-    var blendMode by remember { mutableStateOf(BlendMode.Screen) }
+    var mainTabIndex by remember { mutableIntStateOf(0) }
 
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-
-    // Image 1 adjustments
     var brightness1 by remember { mutableFloatStateOf(0f) }
     var contrast1 by remember { mutableFloatStateOf(1f) }
     var saturation1 by remember { mutableFloatStateOf(1f) }
     var highlights1 by remember { mutableFloatStateOf(0f) }
     var shadows1 by remember { mutableFloatStateOf(0f) }
 
-    // Image 2 adjustments
     var brightness2 by remember { mutableFloatStateOf(0f) }
     var contrast2 by remember { mutableFloatStateOf(1f) }
     var saturation2 by remember { mutableFloatStateOf(1f) }
@@ -111,7 +112,6 @@ fun EditorScreen(viewModel: SharedViewModel, navController: androidx.navigation.
     val shareDialogTitle = stringResource(R.string.share_dialog_title)
     val failedToShare = stringResource(R.string.failed_to_share)
     val captureError = stringResource(R.string.capture_error)
-
 
     Column(
         modifier = Modifier
@@ -148,7 +148,7 @@ fun EditorScreen(viewModel: SharedViewModel, navController: androidx.navigation.
                                 } ?: Toast.makeText(context, failedToShare, Toast.LENGTH_SHORT).show()
                             }
                         }
-                        captureAction = null // Reset action
+                        captureAction = null
                     }
                 } ?: error?.let {
                     Toast.makeText(context, String.format(captureError, it.message), Toast.LENGTH_SHORT).show()
@@ -179,39 +179,77 @@ fun EditorScreen(viewModel: SharedViewModel, navController: androidx.navigation.
             }
         }
 
-        TabRow(selectedTabIndex = selectedTabIndex) {
-            Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }, text = { Text(stringResource(R.string.image_1)) })
-            Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }, text = { Text(stringResource(R.string.image_2)) })
+        TabRow(selectedTabIndex = mainTabIndex) {
+            Tab(
+                selected = mainTabIndex == 0,
+                onClick = { mainTabIndex = 0 },
+                text = { Text(stringResource(R.string.blending_modes)) }
+            )
+            Tab(
+                selected = mainTabIndex == 1,
+                onClick = { mainTabIndex = 1 },
+                text = { Text(stringResource(R.string.adjustments)) }
+            )
         }
 
-        when (selectedTabIndex) {
-            0 -> AdjustmentControls(
-                brightness = brightness1, onBrightnessChange = { brightness1 = it },
-                contrast = contrast1, onContrastChange = { contrast1 = it },
-                saturation = saturation1, onSaturationChange = { saturation1 = it },
-                highlights = highlights1, onHighlightsChange = { highlights1 = it },
-                shadows = shadows1, onShadowsChange = { shadows1 = it },
-            )
-            1 -> AdjustmentControls(
-                brightness = brightness2, onBrightnessChange = { brightness2 = it },
-                contrast = contrast2, onContrastChange = { contrast2 = it },
-                saturation = saturation2, onSaturationChange = { saturation2 = it },
-                highlights = highlights2, onHighlightsChange = { highlights2 = it },
-                shadows = shadows2, onShadowsChange = { shadows2 = it },
-            )
+        when (mainTabIndex) {
+            0 -> {
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    Text(stringResource(R.string.blending_mode))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                        Button(onClick = { viewModel.onBlendModeChange(BlendMode.Screen) }) { Text(stringResource(R.string.screen)) }
+                        Button(onClick = { viewModel.onBlendModeChange(BlendMode.Multiply) }) { Text(stringResource(R.string.multiply)) }
+                        Button(onClick = { viewModel.onBlendModeChange(BlendMode.Overlay) }) { Text(stringResource(R.string.overlay)) }
+                    }
+                }
+            }
+            1 -> {
+                var imageTabIndex by remember { mutableIntStateOf(0) }
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    TabRow(selectedTabIndex = imageTabIndex) {
+                        Tab(
+                            selected = imageTabIndex == 0,
+                            onClick = { imageTabIndex = 0 },
+                            text = { Text(stringResource(R.string.image_1)) }
+                        )
+                        Tab(
+                            selected = imageTabIndex == 1,
+                            onClick = { imageTabIndex = 1 },
+                            text = { Text(stringResource(R.string.image_2)) }
+                        )
+                    }
+
+                    when (imageTabIndex) {
+                        0 -> AdjustmentControls(
+                            brightness = brightness1, onBrightnessChange = { brightness1 = it },
+                            contrast = contrast1, onContrastChange = { contrast1 = it },
+                            saturation = saturation1, onSaturationChange = { saturation1 = it },
+                            highlights = highlights1, onHighlightsChange = { highlights1 = it },
+                            shadows = shadows1, onShadowsChange = { shadows1 = it },
+                        )
+                        1 -> AdjustmentControls(
+                            brightness = brightness2, onBrightnessChange = { brightness2 = it },
+                            contrast = contrast2, onContrastChange = { contrast2 = it },
+                            saturation = saturation2, onSaturationChange = { saturation2 = it },
+                            highlights = highlights2, onHighlightsChange = { highlights2 = it },
+                            shadows = shadows2, onShadowsChange = { shadows2 = it },
+                        )
+                    }
+                }
+            }
         }
 
         Text(stringResource(R.string.transparency))
         Slider(value = alpha, onValueChange = { alpha = it }, valueRange = 0f..1f, modifier = Modifier.fillMaxWidth())
 
-        Text(stringResource(R.string.blending_mode))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-            Button(onClick = { blendMode = BlendMode.Screen }) { Text(stringResource(R.string.screen)) }
-            Button(onClick = { blendMode = BlendMode.Multiply }) { Text(stringResource(R.string.multiply)) }
-            Button(onClick = { blendMode = BlendMode.Overlay }) { Text(stringResource(R.string.overlay)) }
-        }
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+            }
             Button(onClick = {
                 captureAction = "save"
                 captureController.capture()
@@ -221,7 +259,7 @@ fun EditorScreen(viewModel: SharedViewModel, navController: androidx.navigation.
                 captureController.capture()
             }) { Text(stringResource(R.string.share)) }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
     }
 }

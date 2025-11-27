@@ -26,4 +26,7 @@
     <string name="select_image_2">Select Image 2</string>
     <string name="change_image_2">Change Image 2</string>
     <string name="go_to_editor">Go to Editor</string>
+    <string name="blending_modes">Blending Modes</string>
+    <string name="adjustments">Adjustments</string>
+    <string name="back">Back</string>
 </resources>
