@@ -14,7 +14,7 @@ import kotlinx.coroutines.delay
 fun SplashScreen(navController: NavController) {
     LaunchedEffect(key1 = true) {
         delay(2000L) // Задержка на 2 секунды
-        navController.navigate("editor") {
+        navController.navigate("image_selection") {
             popUpTo("splash") { inclusive = true }
         }
     }

@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MultexTheme {
                 val navController = rememberNavController()
-                // ViewModel is shared across the NavHost
+                // Create the ViewModel at the Activity level, so it's shared across all screens.
                 val sharedViewModel: SharedViewModel = viewModel()
 
                 NavHost(
@@ -34,13 +34,15 @@ class MainActivity : ComponentActivity() {
                         SplashScreen(navController)
                     }
                     composable("image_selection") {
+                        // Pass the single, shared ViewModel instance to the screen.
                         ImageSelectionScreen(
                             navController = navController,
                             viewModel = sharedViewModel
                         )
                     }
                     composable("editor") {
-                        EditorScreen(viewModel = sharedViewModel)
+                        // Pass the same instance and navController to the editor screen.
+                        EditorScreen(viewModel = sharedViewModel, navController = navController)
                     }
                 }
             }

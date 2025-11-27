@@ -21,4 +21,9 @@
     <string name="saturation">Saturation</string>
     <string name="highlights">Highlights</string>
     <string name="shadows">Shadows</string>
+    <string name="select_image_1">Select Image 1</string>
+    <string name="change_image_1">Change Image 1</string>
+    <string name="select_image_2">Select Image 2</string>
+    <string name="change_image_2">Change Image 2</string>
+    <string name="go_to_editor">Go to Editor</string>
 </resources>

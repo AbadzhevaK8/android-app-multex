@@ -1,4 +1,6 @@
+
 package com.example.multex.ui.screens
+import androidx.compose.runtime.LaunchedEffect
 
 import android.content.Intent
 import android.graphics.ColorMatrix as AndroidColorMatrix
@@ -53,14 +55,19 @@ import dev.shreyaspatil.capturable.controller.rememberCaptureController
 import kotlinx.coroutines.launch
 
 @Composable
-fun EditorScreen(viewModel: SharedViewModel) {
+fun EditorScreen(viewModel: SharedViewModel, navController: androidx.navigation.NavController? = null) {
     val imageUri1 by viewModel.imageUri1.collectAsState()
     val imageUri2 by viewModel.imageUri2.collectAsState()
 
-    // Show a loading state or handle null URIs gracefully
+    // Если изображения не выбраны, возвращаем пользователя на экран выбора
     if (imageUri1 == null || imageUri2 == null) {
+        LaunchedEffect(Unit) {
+            navController?.navigate("image_selection") {
+                popUpTo("editor") { inclusive = true }
+            }
+        }
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator() // Or a message
+            CircularProgressIndicator()
         }
         return
     }
