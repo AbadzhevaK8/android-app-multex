@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Multex</string>
+    <string name="image_1">Image 1</string>
+    <string name="image_2">Image 2</string>
+    <string name="edited_image_filename">edited_image</string>
+    <string name="image_saved_successfully">Image saved successfully!</string>
+    <string name="failed_to_save_image">Failed to save image</string>
+    <string name="share_image_filename">share_image</string>
+    <string name="share_dialog_title">Share Image</string>
+    <string name="failed_to_share">Failed to save image for sharing</string>
+    <string name="capture_error">Error capturing image: %1$s</string>
+    <string name="transparency">Transparency</string>
+    <string name="blending_mode">Blending Mode</string>
+    <string name="screen">Screen</string>
+    <string name="multiply">Multiply</string>
+    <string name="overlay">Overlay</string>
+    <string name="save">Save</string>
+    <string name="share">Share</string>
+    <string name="brightness">Brightness</string>
+    <string name="contrast">Contrast</string>
+    <string name="saturation">Saturation</string>
+    <string name="highlights">Highlights</string>
+    <string name="shadows">Shadows</string>
+</resources>
