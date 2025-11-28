@@ -1,8 +1,6 @@
 package com.example.multex.ui.screens
 
 import android.graphics.Bitmap
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -44,16 +41,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.createBitmap
 import androidx.navigation.NavController
 import com.example.multex.SharedViewModel
 import dev.shreyaspatil.capturable.Capturable
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,7 +61,6 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
     val imageUri1 by viewModel.imageUri1.collectAsState()
     val imageUri2 by viewModel.imageUri2.collectAsState()
 
-    // --- ИСПРАВЛЕНО: Собираем все состояния один раз в родительском Composable ---
     val blendMode by viewModel.blendMode.collectAsState()
     val alpha1 by viewModel.alpha1.collectAsState()
     val alpha2 by viewModel.alpha2.collectAsState()
@@ -124,8 +121,7 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
+                .padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Capturable(
@@ -134,7 +130,7 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
                     if (capturedBitmap != null) {
                         viewModel.saveImage(context, capturedBitmap.asAndroidBitmap())
                     } else {
-                        viewModel.showToast(context, "Capture failed: \${error?.message}")
+                        viewModel.showToast(context, "Capture failed: ${error?.message}")
                     }
                 }
             ) {
@@ -150,28 +146,38 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
 
 @Composable
 fun ImagePreview(bitmap1: Bitmap?, bitmap2: Bitmap?, blendMode: androidx.compose.ui.graphics.BlendMode, alpha1: Float, alpha2: Float) {
+    val aspectRatio = if (bitmap1 != null && bitmap1.height > 0) {
+        bitmap1.width.toFloat() / bitmap1.height.toFloat()
+    } else {
+        1f // Default to square if bitmap1 is not available
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(12.dp))
+            .aspectRatio(aspectRatio)
             .background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center
     ) {
         if (bitmap1 != null && bitmap2 != null) {
-            val finalBitmap = remember(bitmap1, bitmap2, blendMode, alpha1, alpha2) {
-                val result = createBitmap(bitmap1.width, bitmap1.height, Bitmap.Config.ARGB_8888)
-                val canvas = android.graphics.Canvas(result)
-                val paint1 = android.graphics.Paint().apply { this.alpha = (alpha1 * 255).toInt() }
-                val paint2 = android.graphics.Paint().apply {
-                    this.xfermode = PorterDuffXfermode(blendMode.toPorterDuffMode())
-                    this.alpha = (alpha2 * 255).toInt()
-                }
-                canvas.drawBitmap(bitmap1, 0f, 0f, paint1)
-                canvas.drawBitmap(bitmap2, 0f, 0f, paint2)
-                result
-            }
-            Image(bitmap = finalBitmap.asImageBitmap(), contentDescription = null, modifier = Modifier.fillMaxSize())
+            Image(
+                bitmap = bitmap1.asImageBitmap(),
+                contentDescription = "Image 1",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                alpha = alpha1
+            )
+            Image(
+                bitmap = bitmap2.asImageBitmap(),
+                contentDescription = "Image 2",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer(
+                        alpha = alpha2,
+                        blendMode = blendMode
+                    ),
+                contentScale = ContentScale.Crop
+            )
         } else {
             Text("Loading images...")
         }
@@ -203,7 +209,6 @@ fun EditorTabs(viewModel: SharedViewModel) {
 
 @Composable
 fun Image1Settings(viewModel: SharedViewModel) {
-    // --- ИСПРАВЛЕНО: Получаем состояния для Image 1 напрямую ---
     val alpha by viewModel.alpha1.collectAsState()
     val brightness by viewModel.brightness1.collectAsState()
     val contrast by viewModel.contrast1.collectAsState()
@@ -223,7 +228,6 @@ fun Image1Settings(viewModel: SharedViewModel) {
 
 @Composable
 fun Image2Settings(viewModel: SharedViewModel) {
-    // --- ИСПРАВЛЕНО: Получаем состояния для Image 2 напрямую ---
     val alpha by viewModel.alpha2.collectAsState()
     val brightness by viewModel.brightness2.collectAsState()
     val contrast by viewModel.contrast2.collectAsState()
@@ -274,33 +278,7 @@ fun BlendSettings(viewModel: SharedViewModel) {
 @Composable
 fun AdjustmentSlider(label: String, value: Float, onValueChange: (Float) -> Unit, valueRange: ClosedFloatingPointRange<Float>) {
     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-        Text(text = "$label: ${"%.2f".format(value)}", style = MaterialTheme.typography.labelMedium)
+        Text(text = "$label: ${String.format(Locale.US, "%.2f", value)}", style = MaterialTheme.typography.labelMedium)
         Slider(value = value, onValueChange = onValueChange, valueRange = valueRange)
-    }
-}
-
-// Утилиты для конвертации BlendMode
-fun androidx.compose.ui.graphics.BlendMode.toPorterDuffMode(): PorterDuff.Mode {
-    return when (this) {
-        androidx.compose.ui.graphics.BlendMode.Clear -> PorterDuff.Mode.CLEAR
-        androidx.compose.ui.graphics.BlendMode.Src -> PorterDuff.Mode.SRC
-        androidx.compose.ui.graphics.BlendMode.Dst -> PorterDuff.Mode.DST
-        androidx.compose.ui.graphics.BlendMode.SrcOver -> PorterDuff.Mode.SRC_OVER
-        androidx.compose.ui.graphics.BlendMode.DstOver -> PorterDuff.Mode.DST_OVER
-        androidx.compose.ui.graphics.BlendMode.SrcIn -> PorterDuff.Mode.SRC_IN
-        androidx.compose.ui.graphics.BlendMode.DstIn -> PorterDuff.Mode.DST_IN
-        androidx.compose.ui.graphics.BlendMode.SrcOut -> PorterDuff.Mode.SRC_OUT
-        androidx.compose.ui.graphics.BlendMode.DstOut -> PorterDuff.Mode.DST_OUT
-        androidx.compose.ui.graphics.BlendMode.SrcAtop -> PorterDuff.Mode.SRC_ATOP
-        androidx.compose.ui.graphics.BlendMode.DstAtop -> PorterDuff.Mode.DST_ATOP
-        androidx.compose.ui.graphics.BlendMode.Xor -> PorterDuff.Mode.XOR
-        androidx.compose.ui.graphics.BlendMode.Plus -> PorterDuff.Mode.ADD
-        androidx.compose.ui.graphics.BlendMode.Modulate -> PorterDuff.Mode.MULTIPLY
-        androidx.compose.ui.graphics.BlendMode.Screen -> PorterDuff.Mode.SCREEN
-        androidx.compose.ui.graphics.BlendMode.Overlay -> PorterDuff.Mode.OVERLAY
-        androidx.compose.ui.graphics.BlendMode.Darken -> PorterDuff.Mode.DARKEN
-        androidx.compose.ui.graphics.BlendMode.Lighten -> PorterDuff.Mode.LIGHTEN
-        androidx.compose.ui.graphics.BlendMode.Multiply -> PorterDuff.Mode.MULTIPLY
-        else -> PorterDuff.Mode.SRC_OVER
     }
 }
