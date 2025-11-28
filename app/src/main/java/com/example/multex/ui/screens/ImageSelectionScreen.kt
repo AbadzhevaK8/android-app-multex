@@ -3,8 +3,11 @@ package com.example.multex.ui.screens
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,7 +29,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -63,39 +69,17 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val imageModifier = Modifier
-                .size(120.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
-
-            AsyncImage(
-                model = imageUri1,
+            ImagePickerBox(
+                imageUri = imageUri1,
                 contentDescription = stringResource(R.string.select_image_1),
-                modifier = imageModifier,
-                contentScale = ContentScale.Crop
+                onClick = { launcher1.launch("image/*") }
             )
 
-            AsyncImage(
-                model = imageUri2,
+            ImagePickerBox(
+                imageUri = imageUri2,
                 contentDescription = stringResource(R.string.select_image_2),
-                modifier = imageModifier,
-                contentScale = ContentScale.Crop
+                onClick = { launcher2.launch("image/*") }
             )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Buttons row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            Button(onClick = { launcher1.launch("image/*") }) {
-                Text(if (imageUri1 == null) stringResource(R.string.select_image_1) else stringResource(R.string.change_image_1))
-            }
-            Button(onClick = { launcher2.launch("image/*") }) {
-                Text(if (imageUri2 == null) stringResource(R.string.select_image_2) else stringResource(R.string.change_image_2))
-            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -106,5 +90,32 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
         ) {
             Text(stringResource(R.string.go_to_editor))
         }
+    }
+}
+
+@Composable
+fun ImagePickerBox(imageUri: Uri?, contentDescription: String, onClick: () -> Unit) {
+    val imageModifier = Modifier
+        .size(150.dp)
+        .clip(RoundedCornerShape(8.dp))
+        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
+
+    Box(
+        modifier = imageModifier.clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_image_placeholder),
+            contentDescription = null, // decorative
+            colorFilter = ColorFilter.tint(Color.Gray),
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Fit
+        )
+        AsyncImage(
+            model = imageUri,
+            contentDescription = contentDescription,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
     }
 }
