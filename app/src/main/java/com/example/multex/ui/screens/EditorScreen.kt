@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
@@ -167,7 +169,7 @@ fun ImagePreview(bitmap1: Bitmap?, bitmap2: Bitmap?, blendMode: androidx.compose
                 bitmap = bitmap1.asImageBitmap(),
                 contentDescription = "Image 1",
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.Fit,
                 alpha = alpha1
             )
             Image(
@@ -179,7 +181,7 @@ fun ImagePreview(bitmap1: Bitmap?, bitmap2: Bitmap?, blendMode: androidx.compose
                         alpha = alpha2,
                         blendMode = blendMode
                     ),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Fit
             )
         } else {
             Text("Loading images...")
@@ -287,6 +289,17 @@ fun AdjustmentSlider(label: String, value: Float, onValueChange: (Float) -> Unit
             value = value,
             onValueChange = onValueChange,
             valueRange = valueRange,
+            thumb = {
+                Box(
+                    modifier = Modifier
+                        .width(2.dp)
+                        .height(16.dp)
+                        .background(
+                            color = SliderDefaults.colors().thumbColor,
+                            shape = RectangleShape
+                        )
+                )
+            },
             track = { sliderState ->
                 val colors = SliderDefaults.colors()
                 val progress = (sliderState.value - valueRange.start) / (valueRange.endInclusive - valueRange.start)
