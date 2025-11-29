@@ -22,9 +22,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -57,6 +56,8 @@ import com.example.multex.SharedViewModel
 import dev.shreyaspatil.capturable.Capturable
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
 import java.util.Locale
+
+private enum class CaptureAction { SAVE, SHARE }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +93,7 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
     }
 
     val captureController = rememberCaptureController()
-    var showMenu by remember { mutableStateOf(false) }
+    var captureAction by remember { mutableStateOf<CaptureAction?>(null) }
 
     Column(
         modifier = Modifier
@@ -104,10 +105,16 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
             controller = captureController,
             onCaptured = { capturedBitmap, error ->
                 if (capturedBitmap != null) {
-                    viewModel.saveImage(context, capturedBitmap.asAndroidBitmap())
+                    val bitmap = capturedBitmap.asAndroidBitmap()
+                    when (captureAction) {
+                        CaptureAction.SAVE -> viewModel.saveImage(context, bitmap)
+                        CaptureAction.SHARE -> viewModel.shareImage(context, bitmap)
+                        null -> viewModel.saveImage(context, bitmap) // Fallback to save
+                    }
                 } else {
                     viewModel.showToast(context, "Capture failed: ${error?.message}")
                 }
+                captureAction = null // Reset action
             }
         ) {
             ImagePreview(bitmap1, bitmap2, blendMode, alpha1, alpha2)
@@ -128,21 +135,18 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
 
-            Box {
-                IconButton(onClick = { showMenu = true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "More")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = {
+                    captureAction = CaptureAction.SHARE
+                    captureController.capture()
+                }) {
+                    Icon(Icons.Default.Share, contentDescription = "Share")
                 }
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Save Image") },
-                        onClick = {
-                            showMenu = false
-                            captureController.capture()
-                        }
-                    )
+                IconButton(onClick = {
+                    captureAction = CaptureAction.SAVE
+                    captureController.capture()
+                }) {
+                    Icon(Icons.Default.Done, contentDescription = "Save")
                 }
             }
         }

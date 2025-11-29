@@ -1,6 +1,7 @@
 package com.example.multex
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -11,6 +12,7 @@ import android.net.Uri
 import android.os.Environment
 import android.widget.Toast
 import androidx.compose.ui.graphics.BlendMode
+import androidx.core.content.FileProvider
 import androidx.core.graphics.createBitmap
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -156,6 +158,31 @@ class SharedViewModel : ViewModel() {
         } catch (e: Exception) {
             e.printStackTrace()
             showToast(context, "Error saving image: ${e.message}")
+        }
+    }
+
+    fun shareImage(context: Context, bitmap: Bitmap) {
+        try {
+            val cachePath = File(context.cacheDir, "images")
+            cachePath.mkdirs()
+            val file = File(cachePath, "Multex_Image_${System.currentTimeMillis()}.png")
+            val fOut = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut)
+            fOut.flush()
+            fOut.close()
+
+            val contentUri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+
+            val shareIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_STREAM, contentUri)
+                type = "image/png"
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(Intent.createChooser(shareIntent, "Share Image"))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            showToast(context, "Error sharing image: ${e.message}")
         }
     }
 
