@@ -7,12 +7,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -25,12 +26,10 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -89,57 +88,57 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
     val captureController = rememberCaptureController()
     var showMenu by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Editor") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
-                    }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Save Image") },
-                            onClick = {
-                                showMenu = false
-                                captureController.capture()
-                            }
-                        )
-                    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.safeDrawing),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Capturable(
+            controller = captureController,
+            onCaptured = { capturedBitmap, error ->
+                if (capturedBitmap != null) {
+                    viewModel.saveImage(context, capturedBitmap.asAndroidBitmap())
+                } else {
+                    viewModel.showToast(context, "Capture failed: ${error?.message}")
                 }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            horizontalAlignment = Alignment.CenterHorizontally
+            }
         ) {
-            Capturable(
-                controller = captureController,
-                onCaptured = { capturedBitmap, error ->
-                    if (capturedBitmap != null) {
-                        viewModel.saveImage(context, capturedBitmap.asAndroidBitmap())
-                    } else {
-                        viewModel.showToast(context, "Capture failed: ${error?.message}")
-                    }
-                }
-            ) {
-                ImagePreview(bitmap1, bitmap2, blendMode, alpha1, alpha2)
+            ImagePreview(bitmap1, bitmap2, blendMode, alpha1, alpha2)
+        }
+
+        Box(modifier = Modifier.weight(1f)) {
+            EditorTabs(viewModel = viewModel)
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            EditorTabs(viewModel = viewModel)
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "More")
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Save Image") },
+                        onClick = {
+                            showMenu = false
+                            captureController.capture()
+                        }
+                    )
+                }
+            }
         }
     }
 }
