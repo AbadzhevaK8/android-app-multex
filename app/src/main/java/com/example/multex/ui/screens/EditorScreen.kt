@@ -195,7 +195,7 @@ fun ImagePreview(bitmap1: Bitmap?, bitmap2: Bitmap?, blendMode: androidx.compose
 
 @Composable
 fun EditorTabs(viewModel: SharedViewModel) {
-    var tabIndex by remember { mutableIntStateOf(0) }
+    var tabIndex by remember { mutableIntStateOf(2) }
     val tabs = listOf("Image 1", "Image 2", "Blend")
 
     Column {
