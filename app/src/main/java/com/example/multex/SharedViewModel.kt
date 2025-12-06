@@ -98,6 +98,22 @@ class SharedViewModel : ViewModel() {
     fun onHighlights2Change(value: Float) { _highlights2.value = value }
     fun onShadows2Change(value: Float) { _shadows2.value = value }
 
+    fun resetSettings() {
+        _blendMode.value = BlendMode.Screen
+        _alpha1.value = 1f
+        _alpha2.value = 1f
+        _brightness1.value = 1f
+        _contrast1.value = 1f
+        _saturation1.value = 1f
+        _highlights1.value = 0f
+        _shadows1.value = 0f
+        _brightness2.value = 1f
+        _contrast2.value = 1f
+        _saturation2.value = 1f
+        _highlights2.value = 0f
+        _shadows2.value = 0f
+    }
+
     fun loadAndProcessBitmap(context: Context, uri: Uri, brightness: Float, contrast: Float, saturation: Float, highlights: Float, shadows: Float): Bitmap? {
         return try {
             val inputStream = context.contentResolver.openInputStream(uri)

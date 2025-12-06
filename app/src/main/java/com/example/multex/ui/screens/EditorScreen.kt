@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -136,6 +137,9 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { viewModel.resetSettings() }) { // Added reset button
+                    Icon(Icons.Default.Refresh, contentDescription = "Reset")
+                }
                 IconButton(onClick = {
                     captureAction = CaptureAction.SHARE
                     captureController.capture()
