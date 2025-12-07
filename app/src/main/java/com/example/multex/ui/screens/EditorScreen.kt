@@ -124,42 +124,40 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .padding(horizontal = 4.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { viewModel.resetSettings() }) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Reset")
-                }
-                IconButton(onClick = {
-                    coroutineScope.launch {
-                        try {
-                            val bitmap = captureController.captureAsync().await()
-                            viewModel.shareImage(context, bitmap.asAndroidBitmap())
-                        } catch (e: Exception) {
-                            viewModel.showToast(context, "Capture failed: ${e.message}")
-                        }
+            IconButton(onClick = { viewModel.resetSettings() }) {
+                Icon(Icons.Default.Refresh, contentDescription = "Reset")
+            }
+            IconButton(onClick = {
+                coroutineScope.launch {
+                    try {
+                        val bitmap = captureController.captureAsync().await()
+                        viewModel.shareImage(context, bitmap.asAndroidBitmap())
+                    } catch (e: Exception) {
+                        viewModel.showToast(context, "Capture failed: ${e.message}")
                     }
-                }) {
-                    Icon(Icons.Default.Share, contentDescription = "Share")
                 }
-                IconButton(onClick = {
-                    coroutineScope.launch {
-                        try {
-                            val bitmap = captureController.captureAsync().await()
-                            viewModel.saveImage(context, bitmap.asAndroidBitmap())
-                        } catch (e: Exception) {
-                            viewModel.showToast(context, "Capture failed: ${e.message}")
-                        }
+            }) {
+                Icon(Icons.Default.Share, contentDescription = "Share")
+            }
+            IconButton(onClick = {
+                coroutineScope.launch {
+                    try {
+                        val bitmap = captureController.captureAsync().await()
+                        viewModel.saveImage(context, bitmap.asAndroidBitmap())
+                    } catch (e: Exception) {
+                        viewModel.showToast(context, "Capture failed: ${e.message}")
                     }
-                }) {
-                    Icon(Icons.Default.Done, contentDescription = "Save")
                 }
+            }) {
+                Icon(Icons.Default.Done, contentDescription = "Save")
             }
         }
     }
