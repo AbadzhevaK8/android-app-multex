@@ -21,12 +21,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -82,7 +81,8 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
             IconButton(onClick = { viewModel.swapImages() }) {
                 Icon(
                     imageVector = Icons.Default.SwapHoriz,
-                    contentDescription = "Swap Images"
+                    contentDescription = "Swap Images",
+                    modifier = Modifier.size(24.dp)
                 )
             }
 
@@ -93,13 +93,17 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
             )
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(64.dp))
 
-        Button(
+        IconButton(
             onClick = { navController.navigate("editor") },
             enabled = imageUri1 != null && imageUri2 != null
         ) {
-            Text(stringResource(R.string.go_to_editor))
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = stringResource(R.string.go_to_editor),
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
 }
