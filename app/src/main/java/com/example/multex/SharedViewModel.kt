@@ -71,6 +71,12 @@ class SharedViewModel : ViewModel() {
         _imageUri2.value = uri
     }
 
+    fun swapImages() {
+        val tempUri = _imageUri1.value
+        _imageUri1.value = _imageUri2.value
+        _imageUri2.value = tempUri
+    }
+
     fun onBlendModeChange(blendMode: BlendMode) {
         _blendMode.value = blendMode
     }
