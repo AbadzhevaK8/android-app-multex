@@ -1,3 +1,6 @@
+@file:Suppress("OPT_IN_USAGE")
+@file:OptIn(ExperimentalComposeUiApi::class, ExperimentalComposeApi::class)
+
 package com.example.multex.ui.screens
 
 import android.graphics.Bitmap
@@ -30,21 +33,24 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ExperimentalGraphicsApi
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -54,13 +60,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.multex.SharedViewModel
-import dev.shreyaspatil.capturable.Capturable
+import dev.shreyaspatil.capturable.capturable
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import java.util.Locale
 
-private enum class CaptureAction { SAVE, SHARE }
-
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
     val context = LocalContext.current
@@ -94,7 +100,7 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
     }
 
     val captureController = rememberCaptureController()
-    var captureAction by remember { mutableStateOf<CaptureAction?>(null) }
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -102,24 +108,14 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
             .windowInsetsPadding(WindowInsets.safeDrawing),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Capturable(
-            controller = captureController,
-            onCaptured = { capturedBitmap, error ->
-                if (capturedBitmap != null) {
-                    val bitmap = capturedBitmap.asAndroidBitmap()
-                    when (captureAction) {
-                        CaptureAction.SAVE -> viewModel.saveImage(context, bitmap)
-                        CaptureAction.SHARE -> viewModel.shareImage(context, bitmap)
-                        null -> viewModel.saveImage(context, bitmap) // Fallback to save
-                    }
-                } else {
-                    viewModel.showToast(context, "Capture failed: ${error?.message}")
-                }
-                captureAction = null // Reset action
-            }
-        ) {
-            ImagePreview(bitmap1, bitmap2, blendMode, alpha1, alpha2)
-        }
+        ImagePreview(
+            bitmap1,
+            bitmap2,
+            blendMode,
+            alpha1,
+            alpha2,
+            modifier = Modifier.capturable(captureController)
+        )
 
         Box(modifier = Modifier.weight(1f)) {
             EditorTabs(viewModel = viewModel)
@@ -137,18 +133,30 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = { viewModel.resetSettings() }) { // Added reset button
+                IconButton(onClick = { viewModel.resetSettings() }) {
                     Icon(Icons.Default.Refresh, contentDescription = "Reset")
                 }
                 IconButton(onClick = {
-                    captureAction = CaptureAction.SHARE
-                    captureController.capture()
+                    coroutineScope.launch {
+                        try {
+                            val bitmap = captureController.captureAsync().await()
+                            viewModel.shareImage(context, bitmap.asAndroidBitmap())
+                        } catch (e: Exception) {
+                            viewModel.showToast(context, "Capture failed: ${e.message}")
+                        }
+                    }
                 }) {
                     Icon(Icons.Default.Share, contentDescription = "Share")
                 }
                 IconButton(onClick = {
-                    captureAction = CaptureAction.SAVE
-                    captureController.capture()
+                    coroutineScope.launch {
+                        try {
+                            val bitmap = captureController.captureAsync().await()
+                            viewModel.saveImage(context, bitmap.asAndroidBitmap())
+                        } catch (e: Exception) {
+                            viewModel.showToast(context, "Capture failed: ${e.message}")
+                        }
+                    }
                 }) {
                     Icon(Icons.Default.Done, contentDescription = "Save")
                 }
@@ -157,8 +165,16 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
     }
 }
 
+@OptIn(ExperimentalGraphicsApi::class)
 @Composable
-fun ImagePreview(bitmap1: Bitmap?, bitmap2: Bitmap?, blendMode: androidx.compose.ui.graphics.BlendMode, alpha1: Float, alpha2: Float) {
+fun ImagePreview(
+    bitmap1: Bitmap?,
+    bitmap2: Bitmap?,
+    blendMode: androidx.compose.ui.graphics.BlendMode,
+    alpha1: Float,
+    alpha2: Float,
+    modifier: Modifier = Modifier
+) {
     val aspectRatio = if (bitmap1 != null && bitmap1.height > 0) {
         bitmap1.width.toFloat() / bitmap1.height.toFloat()
     } else {
@@ -166,7 +182,7 @@ fun ImagePreview(bitmap1: Bitmap?, bitmap2: Bitmap?, blendMode: androidx.compose
     }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .aspectRatio(aspectRatio)
             .background(MaterialTheme.colorScheme.surfaceVariant),
@@ -197,13 +213,14 @@ fun ImagePreview(bitmap1: Bitmap?, bitmap2: Bitmap?, blendMode: androidx.compose
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditorTabs(viewModel: SharedViewModel) {
     var tabIndex by remember { mutableIntStateOf(2) }
     val tabs = listOf("Image 1", "Image 2", "Blend")
 
     Column {
-        TabRow(selectedTabIndex = tabIndex) {
+        PrimaryTabRow(selectedTabIndex = tabIndex) {
             tabs.forEachIndexed { index, title ->
                 Tab(selected = tabIndex == index, onClick = { tabIndex = index }, text = { Text(title) })
             }
