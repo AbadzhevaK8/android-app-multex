@@ -1,5 +1,6 @@
 package com.example.multex
 
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -7,9 +8,12 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.compose.ui.graphics.BlendMode
 import androidx.core.content.FileProvider
@@ -28,10 +32,15 @@ class SharedViewModel : ViewModel() {
     private val _imageUri2 = MutableStateFlow<Uri?>(null)
     val imageUri2: StateFlow<Uri?> = _imageUri2.asStateFlow()
 
+    private val _rotation1 = MutableStateFlow(0f)
+    val rotation1: StateFlow<Float> = _rotation1.asStateFlow()
+
+    private val _rotation2 = MutableStateFlow(0f)
+    val rotation2: StateFlow<Float> = _rotation2.asStateFlow()
+
     private val _blendMode = MutableStateFlow(BlendMode.Screen)
     val blendMode: StateFlow<BlendMode> = _blendMode.asStateFlow()
 
-    // --- ИСПРАВЛЕНО: _alpha разделена на _alpha1 и _alpha2 ---
     private val _alpha1 = MutableStateFlow(1f)
     val alpha1: StateFlow<Float> = _alpha1.asStateFlow()
 
@@ -75,13 +84,32 @@ class SharedViewModel : ViewModel() {
         val tempUri = _imageUri1.value
         _imageUri1.value = _imageUri2.value
         _imageUri2.value = tempUri
+
+        val tempRot = _rotation1.value
+        _rotation1.value = _rotation2.value
+        _rotation2.value = tempRot
+    }
+
+    fun rotateImage1() {
+        _rotation1.value = (_rotation1.value + 90f) % 360f
+    }
+
+    fun rotateImage2() {
+        _rotation2.value = (_rotation2.value + 90f) % 360f
+    }
+
+    fun resetRotation1() {
+        _rotation1.value = 0f
+    }
+
+    fun resetRotation2() {
+        _rotation2.value = 0f
     }
 
     fun onBlendModeChange(blendMode: BlendMode) {
         _blendMode.value = blendMode
     }
 
-    // --- ИСПРАВЛЕНО: onAlphaChange заменена на onAlpha1Change и onAlpha2Change ---
     fun onAlpha1Change(value: Float) {
         _alpha1.value = value
     }
@@ -118,9 +146,11 @@ class SharedViewModel : ViewModel() {
         _saturation2.value = 1f
         _highlights2.value = 0f
         _shadows2.value = 0f
+        _rotation1.value = 0f
+        _rotation2.value = 0f
     }
 
-    fun loadAndProcessBitmap(context: Context, uri: Uri, brightness: Float, contrast: Float, saturation: Float, highlights: Float, shadows: Float): Bitmap? {
+    fun loadAndProcessBitmap(context: Context, uri: Uri, rotation: Float, brightness: Float, contrast: Float, saturation: Float, highlights: Float, shadows: Float): Bitmap? {
         return try {
             val inputStream = context.contentResolver.openInputStream(uri)
             val originalBitmap = BitmapFactory.decodeStream(inputStream)
@@ -131,11 +161,9 @@ class SharedViewModel : ViewModel() {
             val paint = Paint()
             val finalMatrix = ColorMatrix()
 
-            // 1. Насыщенность
             val saturationMatrix = ColorMatrix().apply { setSaturation(saturation) }
             finalMatrix.postConcat(saturationMatrix)
 
-            // 2. Контраст
             val contrastValue = contrast
             val contrastMatrix = ColorMatrix(floatArrayOf(
                 contrastValue, 0f, 0f, 0f, (1 - contrastValue) * 128,
@@ -145,7 +173,6 @@ class SharedViewModel : ViewModel() {
             ))
             finalMatrix.postConcat(contrastMatrix)
 
-            // 3. Общая коррекция яркости (Brightness, Highlights, Shadows)
             val brightnessTotal = (brightness - 1f) * 255f
             val highlightsTotal = highlights * 100f
             val shadowsTotal = shadows * -100f
@@ -161,7 +188,12 @@ class SharedViewModel : ViewModel() {
             paint.colorFilter = ColorMatrixColorFilter(finalMatrix)
             canvas.drawBitmap(originalBitmap, 0f, 0f, paint)
 
-            adjustedBitmap
+            if (rotation == 0f) {
+                return adjustedBitmap
+            }
+            val rotationMatrix = Matrix().apply { postRotate(rotation) }
+            Bitmap.createBitmap(adjustedBitmap, 0, 0, adjustedBitmap.width, adjustedBitmap.height, rotationMatrix, true)
+
         } catch (e: Exception) {
             e.printStackTrace()
             null
@@ -169,17 +201,42 @@ class SharedViewModel : ViewModel() {
     }
 
     fun saveImage(context: Context, bitmap: Bitmap) {
-        try {
-            val picturesDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-            val file = File(picturesDirectory, "Multex_Image_${System.currentTimeMillis()}.png")
-            val fOut = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut)
-            fOut.flush()
-            fOut.close()
-            showToast(context, "Image saved to Pictures folder")
-        } catch (e: Exception) {
-            e.printStackTrace()
-            showToast(context, "Error saving image: ${e.message}")
+        val resolver = context.contentResolver
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, "Multex_Image_${System.currentTimeMillis()}.png")
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
+            }
+        }
+
+        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+
+        if (uri != null) {
+            try {
+                resolver.openOutputStream(uri).use { outputStream ->
+                    if (outputStream != null) {
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                    } else {
+                        throw Exception("Content resolver returned null OutputStream")
+                    }
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    contentValues.clear()
+                    contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
+                    resolver.update(uri, contentValues, null, null)
+                }
+                showToast(context, "Image saved to Pictures folder")
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                showToast(context, "Error saving image: ${e.message}")
+                resolver.delete(uri, null, null) // Clean up the pending entry
+            }
+        } else {
+            showToast(context, "Error saving image: Could not create MediaStore entry.")
         }
     }
 

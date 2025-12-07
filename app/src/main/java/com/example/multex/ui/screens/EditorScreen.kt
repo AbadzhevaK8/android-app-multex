@@ -25,6 +25,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.RotateRight
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
@@ -73,6 +75,8 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
 
     val imageUri1 by viewModel.imageUri1.collectAsState()
     val imageUri2 by viewModel.imageUri2.collectAsState()
+    val rotation1 by viewModel.rotation1.collectAsState()
+    val rotation2 by viewModel.rotation2.collectAsState()
 
     val blendMode by viewModel.blendMode.collectAsState()
     val alpha1 by viewModel.alpha1.collectAsState()
@@ -88,14 +92,14 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
     val highlights2 by viewModel.highlights2.collectAsState()
     val shadows2 by viewModel.shadows2.collectAsState()
 
-    val bitmap1 by produceState<Bitmap?>(initialValue = null, imageUri1, brightness1, contrast1, saturation1, highlights1, shadows1) {
+    val bitmap1 by produceState<Bitmap?>(initialValue = null, imageUri1, rotation1, brightness1, contrast1, saturation1, highlights1, shadows1) {
         imageUri1?.let {
-            value = viewModel.loadAndProcessBitmap(context, it, brightness1, contrast1, saturation1, highlights1, shadows1)
+            value = viewModel.loadAndProcessBitmap(context, it, rotation1, brightness1, contrast1, saturation1, highlights1, shadows1)
         }
     }
-    val bitmap2 by produceState<Bitmap?>(initialValue = null, imageUri2, brightness2, contrast2, saturation2, highlights2, shadows2) {
+    val bitmap2 by produceState<Bitmap?>(initialValue = null, imageUri2, rotation2, brightness2, contrast2, saturation2, highlights2, shadows2) {
         imageUri2?.let {
-            value = viewModel.loadAndProcessBitmap(context, it, brightness2, contrast2, saturation2, highlights2, shadows2)
+            value = viewModel.loadAndProcessBitmap(context, it, rotation2, brightness2, contrast2, saturation2, highlights2, shadows2)
         }
     }
 
@@ -173,37 +177,36 @@ fun ImagePreview(
     alpha2: Float,
     modifier: Modifier = Modifier
 ) {
-    val aspectRatio = if (bitmap1 != null && bitmap1.height > 0) {
-        bitmap1.width.toFloat() / bitmap1.height.toFloat()
-    } else {
-        1f // Default to square if bitmap1 is not available
-    }
-
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(aspectRatio)
             .background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center
     ) {
         if (bitmap1 != null && bitmap2 != null) {
+            val ar1 = remember(bitmap1) { bitmap1.width.toFloat() / bitmap1.height.toFloat() }
             Image(
                 bitmap = bitmap1.asImageBitmap(),
                 contentDescription = "Image 1",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit,
-                alpha = alpha1
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(ar1)
+                    .graphicsLayer { this.alpha = alpha1 },
+                contentScale = ContentScale.FillBounds
             )
+
+            val ar2 = remember(bitmap2) { bitmap2.width.toFloat() / bitmap2.height.toFloat() }
             Image(
                 bitmap = bitmap2.asImageBitmap(),
                 contentDescription = "Image 2",
                 modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer(
-                        alpha = alpha2,
-                        blendMode = blendMode
-                    ),
-                contentScale = ContentScale.Fit
+                    .fillMaxWidth()
+                    .aspectRatio(ar2)
+                    .graphicsLayer {
+                        this.alpha = alpha2
+                        this.blendMode = blendMode
+                    },
+                contentScale = ContentScale.FillBounds
             )
         } else {
             Text("Loading images...")
@@ -243,8 +246,20 @@ fun Image1Settings(viewModel: SharedViewModel) {
     val saturation by viewModel.saturation1.collectAsState()
     val highlights by viewModel.highlights1.collectAsState()
     val shadows by viewModel.shadows1.collectAsState()
+    val rotation1 by viewModel.rotation1.collectAsState()
 
     Column(Modifier.padding(vertical = 8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            IconButton(onClick = { viewModel.rotateImage1() }) {
+                Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = "Rotate 90 degrees")
+            }
+            IconButton(onClick = { viewModel.resetRotation1() }, enabled = rotation1 != 0f) {
+                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Reset Rotation")
+            }
+        }
         AdjustmentSlider("Transparency", alpha, { viewModel.onAlpha1Change(it) }, 0f..1f)
         AdjustmentSlider("Brightness", brightness, { viewModel.onBrightness1Change(it) }, 0f..2f)
         AdjustmentSlider("Contrast", contrast, { viewModel.onContrast1Change(it) }, 0f..2f)
@@ -262,8 +277,20 @@ fun Image2Settings(viewModel: SharedViewModel) {
     val saturation by viewModel.saturation2.collectAsState()
     val highlights by viewModel.highlights2.collectAsState()
     val shadows by viewModel.shadows2.collectAsState()
+    val rotation2 by viewModel.rotation2.collectAsState()
 
     Column(Modifier.padding(vertical = 8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            IconButton(onClick = { viewModel.rotateImage2() }) {
+                Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = "Rotate 90 degrees")
+            }
+            IconButton(onClick = { viewModel.resetRotation2() }, enabled = rotation2 != 0f) {
+                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Reset Rotation")
+            }
+        }
         AdjustmentSlider("Transparency", alpha, { viewModel.onAlpha2Change(it) }, 0f..1f)
         AdjustmentSlider("Brightness", brightness, { viewModel.onBrightness2Change(it) }, 0f..2f)
         AdjustmentSlider("Contrast", contrast, { viewModel.onContrast2Change(it) }, 0f..2f)

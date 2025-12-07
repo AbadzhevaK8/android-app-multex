@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.RotateRight
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -47,6 +50,8 @@ import com.example.multex.SharedViewModel
 fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewModel) {
     val imageUri1 by viewModel.imageUri1.collectAsState()
     val imageUri2 by viewModel.imageUri2.collectAsState()
+    val rotation1 by viewModel.rotation1.collectAsState()
+    val rotation2 by viewModel.rotation2.collectAsState()
 
     val launcher1 = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -72,11 +77,26 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ImagePickerBox(
-                imageUri = imageUri1,
-                contentDescription = stringResource(R.string.select_image_1),
-                onClick = { launcher1.launch("image/*") }
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ImagePickerBox(
+                    imageUri = imageUri1,
+                    rotation = rotation1,
+                    contentDescription = stringResource(R.string.select_image_1),
+                    onClick = { launcher1.launch("image/*") }
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    IconButton(onClick = { viewModel.rotateImage1() }) {
+                        Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = "Rotate Right")
+                    }
+                    IconButton(onClick = { viewModel.resetRotation1() }, enabled = rotation1 != 0f) {
+                        Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Reset Rotation")
+                    }
+                }
+            }
+
 
             IconButton(onClick = { viewModel.swapImages() }) {
                 Icon(
@@ -86,14 +106,28 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
                 )
             }
 
-            ImagePickerBox(
-                imageUri = imageUri2,
-                contentDescription = stringResource(R.string.select_image_2),
-                onClick = { launcher2.launch("image/*") }
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ImagePickerBox(
+                    imageUri = imageUri2,
+                    rotation = rotation2,
+                    contentDescription = stringResource(R.string.select_image_2),
+                    onClick = { launcher2.launch("image/*") }
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    IconButton(onClick = { viewModel.rotateImage2() }) {
+                        Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = "Rotate Right")
+                    }
+                    IconButton(onClick = { viewModel.resetRotation2() }, enabled = rotation2 != 0f) {
+                        Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Reset Rotation")
+                    }
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.height(64.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         IconButton(
             onClick = { navController.navigate("editor") },
@@ -109,28 +143,34 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
 }
 
 @Composable
-fun ImagePickerBox(imageUri: Uri?, contentDescription: String, onClick: () -> Unit) {
+fun ImagePickerBox(imageUri: Uri?, rotation: Float, contentDescription: String, onClick: () -> Unit) {
     val imageModifier = Modifier
-        .size(150.dp)
+        .size(120.dp)
         .clip(RoundedCornerShape(8.dp))
         .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
 
     Box(
-        modifier = imageModifier.clickable(onClick = onClick),
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .then(imageModifier),
         contentAlignment = Alignment.Center
     ) {
         Image(
             painter = painterResource(id = R.drawable.ic_image_placeholder),
             contentDescription = null, // decorative
             colorFilter = ColorFilter.tint(Color.Gray),
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
             contentScale = ContentScale.Fit
         )
         AsyncImage(
             model = imageUri,
             contentDescription = contentDescription,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer { rotationZ = rotation },
+            contentScale = ContentScale.Crop,
         )
     }
 }
