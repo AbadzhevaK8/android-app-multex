@@ -59,8 +59,10 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.multex.R
 import com.example.multex.SharedViewModel
 import dev.shreyaspatil.capturable.capturable
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
@@ -121,7 +123,9 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
             modifier = Modifier.capturable(captureController)
         )
 
-        Box(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier
+            .weight(1f)
+            .verticalScroll(rememberScrollState())) {
             EditorTabs(viewModel = viewModel)
         }
 
@@ -134,10 +138,10 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
             }
             IconButton(onClick = { viewModel.resetSettings() }) {
-                Icon(Icons.Default.Refresh, contentDescription = "Reset")
+                Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.reset))
             }
             IconButton(onClick = {
                 coroutineScope.launch {
@@ -149,7 +153,7 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
                     }
                 }
             }) {
-                Icon(Icons.Default.Share, contentDescription = "Share")
+                Icon(Icons.Default.Share, contentDescription = stringResource(R.string.share))
             }
             IconButton(onClick = {
                 coroutineScope.launch {
@@ -161,7 +165,7 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
                     }
                 }
             }) {
-                Icon(Icons.Default.Done, contentDescription = "Save")
+                Icon(Icons.Default.Done, contentDescription = stringResource(R.string.save))
             }
         }
     }
@@ -187,7 +191,7 @@ fun ImagePreview(
             val ar1 = remember(bitmap1) { bitmap1.width.toFloat() / bitmap1.height.toFloat() }
             Image(
                 bitmap = bitmap1.asImageBitmap(),
-                contentDescription = "Image 1",
+                contentDescription = stringResource(R.string.image_1),
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(ar1)
@@ -198,7 +202,7 @@ fun ImagePreview(
             val ar2 = remember(bitmap2) { bitmap2.width.toFloat() / bitmap2.height.toFloat() }
             Image(
                 bitmap = bitmap2.asImageBitmap(),
-                contentDescription = "Image 2",
+                contentDescription = stringResource(R.string.image_2),
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(ar2)
@@ -209,7 +213,7 @@ fun ImagePreview(
                 contentScale = ContentScale.FillBounds
             )
         } else {
-            Text("Loading images...")
+            Text(stringResource(R.string.loading_images))
         }
     }
 }
@@ -218,7 +222,7 @@ fun ImagePreview(
 @Composable
 fun EditorTabs(viewModel: SharedViewModel) {
     var tabIndex by remember { mutableIntStateOf(2) }
-    val tabs = listOf("Image 1", "Image 2", "Blend")
+    val tabs = listOf(stringResource(R.string.image_1), stringResource(R.string.image_2), stringResource(R.string.blend))
 
     Column {
         PrimaryTabRow(selectedTabIndex = tabIndex) {
@@ -227,8 +231,7 @@ fun EditorTabs(viewModel: SharedViewModel) {
             }
         }
         Column(modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())) {
+            .fillMaxWidth()) {
             when (tabIndex) {
                 0 -> Image1Settings(viewModel)
                 1 -> Image2Settings(viewModel)
@@ -250,22 +253,24 @@ fun Image1Settings(viewModel: SharedViewModel) {
 
     Column(Modifier.padding(vertical = 8.dp)) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             IconButton(onClick = { viewModel.rotateImage1() }) {
-                Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = "Rotate 90 degrees")
+                Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = stringResource(R.string.rotate_90_degrees))
             }
             IconButton(onClick = { viewModel.resetRotation1() }, enabled = rotation1 != 0f) {
-                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Reset Rotation")
+                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = stringResource(R.string.reset_rotation))
             }
         }
-        AdjustmentSlider("Transparency", alpha, { viewModel.onAlpha1Change(it) }, 0f..1f)
-        AdjustmentSlider("Brightness", brightness, { viewModel.onBrightness1Change(it) }, 0f..2f)
-        AdjustmentSlider("Contrast", contrast, { viewModel.onContrast1Change(it) }, 0f..2f)
-        AdjustmentSlider("Saturation", saturation, { viewModel.onSaturation1Change(it) }, 0f..2f)
-        AdjustmentSlider("Highlights", highlights, { viewModel.onHighlights1Change(it) }, 0f..1f)
-        AdjustmentSlider("Shadows", shadows, { viewModel.onShadows1Change(it) }, 0f..1f)
+        AdjustmentSlider(stringResource(R.string.transparency), alpha, { viewModel.onAlpha1Change(it) }, 0f..1f)
+        AdjustmentSlider(stringResource(R.string.brightness), brightness, { viewModel.onBrightness1Change(it) }, 0f..2f)
+        AdjustmentSlider(stringResource(R.string.contrast), contrast, { viewModel.onContrast1Change(it) }, 0f..2f)
+        AdjustmentSlider(stringResource(R.string.saturation), saturation, { viewModel.onSaturation1Change(it) }, 0f..2f)
+        AdjustmentSlider(stringResource(R.string.highlights), highlights, { viewModel.onHighlights1Change(it) }, 0f..1f)
+        AdjustmentSlider(stringResource(R.string.shadows), shadows, { viewModel.onShadows1Change(it) }, 0f..1f)
     }
 }
 
@@ -281,22 +286,24 @@ fun Image2Settings(viewModel: SharedViewModel) {
 
     Column(Modifier.padding(vertical = 8.dp)) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             IconButton(onClick = { viewModel.rotateImage2() }) {
-                Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = "Rotate 90 degrees")
+                Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = stringResource(R.string.rotate_90_degrees))
             }
             IconButton(onClick = { viewModel.resetRotation2() }, enabled = rotation2 != 0f) {
-                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Reset Rotation")
+                Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = stringResource(R.string.reset_rotation))
             }
         }
-        AdjustmentSlider("Transparency", alpha, { viewModel.onAlpha2Change(it) }, 0f..1f)
-        AdjustmentSlider("Brightness", brightness, { viewModel.onBrightness2Change(it) }, 0f..2f)
-        AdjustmentSlider("Contrast", contrast, { viewModel.onContrast2Change(it) }, 0f..2f)
-        AdjustmentSlider("Saturation", saturation, { viewModel.onSaturation2Change(it) }, 0f..2f)
-        AdjustmentSlider("Highlights", highlights, { viewModel.onHighlights2Change(it) }, 0f..1f)
-        AdjustmentSlider("Shadows", shadows, { viewModel.onShadows2Change(it) }, 0f..1f)
+        AdjustmentSlider(stringResource(R.string.transparency), alpha, { viewModel.onAlpha2Change(it) }, 0f..1f)
+        AdjustmentSlider(stringResource(R.string.brightness), brightness, { viewModel.onBrightness2Change(it) }, 0f..2f)
+        AdjustmentSlider(stringResource(R.string.contrast), contrast, { viewModel.onContrast2Change(it) }, 0f..2f)
+        AdjustmentSlider(stringResource(R.string.saturation), saturation, { viewModel.onSaturation2Change(it) }, 0f..2f)
+        AdjustmentSlider(stringResource(R.string.highlights), highlights, { viewModel.onHighlights2Change(it) }, 0f..1f)
+        AdjustmentSlider(stringResource(R.string.shadows), shadows, { viewModel.onShadows2Change(it) }, 0f..1f)
     }
 }
 
@@ -305,9 +312,9 @@ fun Image2Settings(viewModel: SharedViewModel) {
 fun BlendSettings(viewModel: SharedViewModel) {
     val blendMode by viewModel.blendMode.collectAsState()
     val options = listOf(
-        "Screen" to androidx.compose.ui.graphics.BlendMode.Screen,
-        "Multiply" to androidx.compose.ui.graphics.BlendMode.Multiply,
-        "Overlay" to androidx.compose.ui.graphics.BlendMode.Overlay
+        stringResource(R.string.screen) to androidx.compose.ui.graphics.BlendMode.Screen,
+        stringResource(R.string.multiply) to androidx.compose.ui.graphics.BlendMode.Multiply,
+        stringResource(R.string.overlay) to androidx.compose.ui.graphics.BlendMode.Overlay
     )
 
     Row(

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,6 +44,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.canopas.lib.showcase.IntroShowcase
+import com.canopas.lib.showcase.IntroShowcaseScope
+import com.canopas.lib.showcase.component.rememberIntroShowcaseState
 import com.example.multex.R
 import com.example.multex.SharedViewModel
 
@@ -52,6 +56,7 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
     val imageUri2 by viewModel.imageUri2.collectAsState()
     val rotation1 by viewModel.rotation1.collectAsState()
     val rotation2 by viewModel.rotation2.collectAsState()
+    val introShown by viewModel.imageSelectionIntroShown.collectAsState()
 
     val launcher1 = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -63,6 +68,40 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
         onResult = { uri: Uri? -> viewModel.onUri2Change(uri) }
     )
 
+    val introShowcaseState = rememberIntroShowcaseState()
+
+    IntroShowcase(
+        showIntroShowCase = !introShown,
+        dismissOnClickOutside = true,
+        onShowCaseCompleted = {
+            viewModel.onImageSelectionIntroShown()
+        },
+        state = introShowcaseState
+    ) {
+        ImageSelectionContent(
+            navController = navController,
+            viewModel = viewModel,
+            imageUri1 = imageUri1,
+            imageUri2 = imageUri2,
+            rotation1 = rotation1,
+            rotation2 = rotation2,
+            launcher1 = { launcher1.launch("image/*") },
+            launcher2 = { launcher2.launch("image/*") }
+        )
+    }
+}
+
+@Composable
+fun IntroShowcaseScope.ImageSelectionContent(
+    navController: NavController,
+    viewModel: SharedViewModel,
+    imageUri1: Uri?,
+    imageUri2: Uri?,
+    rotation1: Float,
+    rotation2: Float,
+    launcher1: () -> Unit,
+    launcher2: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -85,23 +124,80 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
                     imageUri = imageUri1,
                     rotation = rotation1,
                     contentDescription = stringResource(R.string.select_image_1),
-                    onClick = { launcher1.launch("image/*") }
+                    onClick = launcher1,
+                    modifier = Modifier.introShowCaseTarget(
+                        index = 0,
+                        content = {
+                            Column {
+                                Text(
+                                    text = stringResource(R.string.select_image_1),
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = stringResource(R.string.showcase_select_image_1_message),
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    )
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    IconButton(onClick = { viewModel.rotateImage1() }) {
-                        Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = "Rotate Right")
+                    IconButton(
+                        onClick = { viewModel.rotateImage1() },
+                        modifier = Modifier.introShowCaseTarget(
+                            index = 2,
+                            content = {
+                                Column {
+                                    Text(
+                                        text = stringResource(R.string.showcase_rotate_image_title),
+                                        color = Color.White
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.showcase_rotate_image_message),
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                        )
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.RotateRight,
+                            contentDescription = stringResource(R.string.rotate_right)
+                        )
                     }
-                    IconButton(onClick = { viewModel.resetRotation1() }, enabled = rotation1 != 0f) {
-                        Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Reset Rotation")
+                    IconButton(
+                        onClick = { viewModel.resetRotation1() },
+                        enabled = rotation1 != 0f
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.Undo,
+                            contentDescription = stringResource(R.string.reset_rotation)
+                        )
                     }
                 }
             }
 
-
-            IconButton(onClick = { viewModel.swapImages() }) {
+            IconButton(
+                onClick = { viewModel.swapImages() },
+                modifier = Modifier.introShowCaseTarget(
+                    index = 3,
+                    content = {
+                        Column {
+                            Text(
+                                text = stringResource(R.string.swap_images),
+                                color = Color.White
+                            )
+                            Text(
+                                text = stringResource(R.string.showcase_swap_images_message),
+                                color = Color.White
+                            )
+                        }
+                    }
+                )
+            ) {
                 Icon(
                     imageVector = Icons.Default.SwapHoriz,
-                    contentDescription = "Swap Images",
+                    contentDescription = stringResource(R.string.swap_images),
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -114,14 +210,38 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
                     imageUri = imageUri2,
                     rotation = rotation2,
                     contentDescription = stringResource(R.string.select_image_2),
-                    onClick = { launcher2.launch("image/*") }
+                    onClick = launcher2,
+                    modifier = Modifier.introShowCaseTarget(
+                        index = 1,
+                        content = {
+                            Column {
+                                Text(
+                                    text = stringResource(R.string.select_image_2),
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = stringResource(R.string.showcase_select_image_2_message),
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    )
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     IconButton(onClick = { viewModel.rotateImage2() }) {
-                        Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = "Rotate Right")
+                        Icon(
+                            Icons.AutoMirrored.Filled.RotateRight,
+                            contentDescription = stringResource(R.string.rotate_right)
+                        )
                     }
-                    IconButton(onClick = { viewModel.resetRotation2() }, enabled = rotation2 != 0f) {
-                        Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Reset Rotation")
+                    IconButton(
+                        onClick = { viewModel.resetRotation2() },
+                        enabled = rotation2 != 0f
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.Undo,
+                            contentDescription = stringResource(R.string.reset_rotation)
+                        )
                     }
                 }
             }
@@ -131,7 +251,22 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
 
         IconButton(
             onClick = { navController.navigate("editor") },
-            enabled = imageUri1 != null && imageUri2 != null
+            enabled = imageUri1 != null && imageUri2 != null,
+            modifier = Modifier.introShowCaseTarget(
+                index = 4,
+                content = {
+                    Column {
+                        Text(
+                            text = stringResource(R.string.go_to_editor),
+                            color = Color.White
+                        )
+                        Text(
+                            text = stringResource(R.string.showcase_go_to_editor_message),
+                            color = Color.White
+                        )
+                    }
+                }
+            )
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
@@ -143,14 +278,20 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
 }
 
 @Composable
-fun ImagePickerBox(imageUri: Uri?, rotation: Float, contentDescription: String, onClick: () -> Unit) {
+fun ImagePickerBox(
+    imageUri: Uri?,
+    rotation: Float,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val imageModifier = Modifier
         .size(120.dp)
         .clip(RoundedCornerShape(8.dp))
         .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .clickable(onClick = onClick)
             .then(imageModifier),
         contentAlignment = Alignment.Center

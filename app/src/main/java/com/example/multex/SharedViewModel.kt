@@ -71,6 +71,13 @@ class SharedViewModel : ViewModel() {
     private val _shadows2 = MutableStateFlow(0f)
     val shadows2: StateFlow<Float> = _shadows2.asStateFlow()
 
+    private val _imageSelectionIntroShown = MutableStateFlow(false)
+    val imageSelectionIntroShown: StateFlow<Boolean> = _imageSelectionIntroShown.asStateFlow()
+
+    fun onImageSelectionIntroShown() {
+        _imageSelectionIntroShown.value = true
+    }
+
 
     fun onUri1Change(uri: Uri?) {
         _imageUri1.value = uri
