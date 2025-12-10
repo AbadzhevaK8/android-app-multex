@@ -30,7 +30,7 @@
     <string name="adjustments">Adjustments</string>
     <string name="back">Back</string>
     <string name="reset">Reset</string>
-    <string name="loading_images">Loading images...</string>
+    <string name="loading_images">Loading images…</string>
     <string name="blend">Blend</string>
     <string name="rotate_90_degrees">Rotate 90 degrees</string>
     <string name="reset_rotation">Reset Rotation</string>
