@@ -30,7 +30,7 @@
     <string name="adjustments">Настройки</string>
     <string name="back">Назад</string>
     <string name="reset">Сбросить</string>
-    <string name="loading_images">Загрузка изображений...</string>
+    <string name="loading_images">Загрузка изображений…</string>
     <string name="blend">Смешать</string>
     <string name="rotate_90_degrees">Повернуть на 90 градусов</string>
     <string name="reset_rotation">Сбросить поворот</string>
