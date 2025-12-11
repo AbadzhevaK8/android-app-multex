@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Multex</string>
-    <string name="image_1">1</string>
-    <string name="image_2">2</string>
+    <string name="image_1">Фото 1</string>
+    <string name="image_2">Фото 2</string>
     <string name="edited_image_filename">edited_image</string>
     <string name="image_saved_successfully">Изображение успешно сохранено!</string>
     <string name="failed_to_save_image">Не удалось сохранить изображение</string>
@@ -46,12 +46,15 @@
     <string name="showcase_rotate_image_message">Используйте эти кнопки для поворота изображения.</string>
     <string name="showcase_go_to_editor_title">Продолжить</string>
     <string name="showcase_go_to_editor_message">Как только вы выберете два изображения, нажмите здесь, чтобы перейти к редактору.</string>
-    <string name="showcase_editor_tabs_title">Настройки изображения и смешивания</string>
-    <string name="showcase_editor_tabs_message">Переключайтесь между этими вкладками для индивидуальной настройки каждого изображения или для изменения режима наложения.</string>
-    <string name="showcase_adjustment_sliders_title">Регулировки</string>
-    <string name="showcase_adjustment_sliders_message">Используйте эти ползунки для тонкой настройки внешнего вида ваших изображений.</string>
-    <string name="showcase_blend_modes_title">Режимы наложения</string>
-    <string name="showcase_blend_modes_message">Выберите режим наложения, чтобы изменить способ объединения изображений.</string>
-    <string name="showcase_action_buttons_title">Завершающие действия</string>
-    <string name="showcase_action_buttons_message">Используйте эти кнопки, чтобы вернуться назад, сбросить изменения, поделиться или сохранить ваше конечное творение.</string>
+
+    <!-- Strings for Editor Screen Showcase (Russian) -->
+    <string name="showcase_editor_preview_title">Предпросмотр изображения</string>
+    <string name="showcase_editor_preview_message">Здесь отображаются ваши объединенные изображения. Финальный результат будет захвачен из этого вида.</string>
+    <string name="showcase_editor_tabs_title">Элементы управления редактора</string>
+    <string name="showcase_editor_tabs_message">Переключайтесь между вкладками, чтобы настроить параметры для каждого изображения или режим наложения.</string>
+    <string name="showcase_editor_settings_title">Ползунки регулировки</string>
+    <string name="showcase_editor_settings_message">Используйте эти ползунки для точной настройки яркости, контрастности и других свойств.</string>
+    <string name="showcase_editor_actions_title">Действия</string>
+    <string name="showcase_editor_actions_message">Используйте эти кнопки, чтобы вернуться, сбросить все изменения, поделиться или сохранить окончательное изображение.</string>
+    <string name="opacity">Прозрачность</string>
 </resources>

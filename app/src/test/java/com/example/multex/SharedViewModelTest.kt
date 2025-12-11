@@ -1,5 +1,7 @@
 package com.example.multex
 
+import android.app.Application
+import android.content.SharedPreferences
 import android.net.Uri
 import androidx.compose.ui.graphics.BlendMode
 import junit.framework.TestCase.assertEquals
@@ -16,6 +18,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @ExperimentalCoroutinesApi
 class MainDispatcherRule(
@@ -37,10 +43,23 @@ class SharedViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var viewModel: SharedViewModel
+    private lateinit var application: Application
+    private lateinit var sharedPrefs: SharedPreferences
+    private lateinit var editor: SharedPreferences.Editor
 
     @Before
     fun setUp() {
-        viewModel = SharedViewModel()
+        application = mock()
+        sharedPrefs = mock()
+        editor = mock()
+        whenever(application.getSharedPreferences(any(), any())).thenReturn(sharedPrefs)
+        whenever(sharedPrefs.edit()).thenReturn(editor)
+        whenever(editor.putBoolean(any(), any())).thenReturn(editor)
+
+        // Default to intro not shown
+        whenever(sharedPrefs.getBoolean(any(), any())).thenReturn(false)
+
+        viewModel = SharedViewModel(application)
     }
 
     @Test
@@ -226,9 +245,34 @@ class SharedViewModelTest {
     }
 
     @Test
-    fun onImageSelectionIntroShown_updatesFlag() {
+    fun onImageSelectionIntroShown_updatesFlagAndPrefs() {
         assertFalse(viewModel.imageSelectionIntroShown.value)
         viewModel.onImageSelectionIntroShown()
         assertTrue(viewModel.imageSelectionIntroShown.value)
+        verify(editor).putBoolean("image_selection_intro_shown", true)
+        verify(editor).apply()
+    }
+
+    @Test
+    fun onEditorIntroShown_updatesFlagAndPrefs() {
+        assertFalse(viewModel.editorIntroShown.value)
+        viewModel.onEditorIntroShown()
+        assertTrue(viewModel.editorIntroShown.value)
+        verify(editor).putBoolean("editor_intro_shown", true)
+        verify(editor).apply()
+    }
+
+    @Test
+    fun init_whenIntroAlreadyShown_loadsFromPrefs() {
+        // Arrange: tell the mock to return true this time
+        whenever(sharedPrefs.getBoolean("image_selection_intro_shown", false)).thenReturn(true)
+        whenever(sharedPrefs.getBoolean("editor_intro_shown", false)).thenReturn(true)
+
+        // Act: create a new viewmodel
+        val newViewModel = SharedViewModel(application)
+
+        // Assert
+        assertTrue(newViewModel.imageSelectionIntroShown.value)
+        assertTrue(newViewModel.editorIntroShown.value)
     }
 }

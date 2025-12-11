@@ -1,8 +1,10 @@
 package com.example.multex
 
+import android.app.Application
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -18,14 +20,16 @@ import android.widget.Toast
 import androidx.compose.ui.graphics.BlendMode
 import androidx.core.content.FileProvider
 import androidx.core.graphics.createBitmap
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 import java.io.FileOutputStream
 
-class SharedViewModel : ViewModel() {
+class SharedViewModel(application: Application) : AndroidViewModel(application) {
+    private val prefs: SharedPreferences = application.getSharedPreferences("multex_prefs", Context.MODE_PRIVATE)
+
     private val _imageUri1 = MutableStateFlow<Uri?>(null)
     val imageUri1: StateFlow<Uri?> = _imageUri1.asStateFlow()
 
@@ -71,13 +75,21 @@ class SharedViewModel : ViewModel() {
     private val _shadows2 = MutableStateFlow(0f)
     val shadows2: StateFlow<Float> = _shadows2.asStateFlow()
 
-    private val _imageSelectionIntroShown = MutableStateFlow(false)
+    private val _imageSelectionIntroShown = MutableStateFlow(prefs.getBoolean("image_selection_intro_shown", false))
     val imageSelectionIntroShown: StateFlow<Boolean> = _imageSelectionIntroShown.asStateFlow()
+
+    private val _editorIntroShown = MutableStateFlow(prefs.getBoolean("editor_intro_shown", false))
+    val editorIntroShown: StateFlow<Boolean> = _editorIntroShown.asStateFlow()
 
     fun onImageSelectionIntroShown() {
         _imageSelectionIntroShown.value = true
+        prefs.edit().putBoolean("image_selection_intro_shown", true).apply()
     }
 
+    fun onEditorIntroShown() {
+        _editorIntroShown.value = true
+        prefs.edit().putBoolean("editor_intro_shown", true).apply()
+    }
 
     fun onUri1Change(uri: Uri?) {
         _imageUri1.value = uri

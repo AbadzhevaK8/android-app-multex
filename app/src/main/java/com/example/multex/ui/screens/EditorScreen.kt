@@ -6,13 +6,12 @@ package com.example.multex.ui.screens
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -120,11 +119,13 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
             blendMode,
             alpha1,
             alpha2,
-            modifier = Modifier.capturable(captureController)
+            modifier = Modifier
+                .weight(7f)
+                .capturable(captureController)
         )
 
         Column(modifier = Modifier
-            .weight(1f)
+            .weight(3f)
             .verticalScroll(rememberScrollState())) {
             EditorTabs(viewModel = viewModel)
         }
@@ -184,33 +185,29 @@ fun ImagePreview(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceVariant),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         if (bitmap1 != null && bitmap2 != null) {
-            val ar1 = remember(bitmap1) { bitmap1.width.toFloat() / bitmap1.height.toFloat() }
             Image(
                 bitmap = bitmap1.asImageBitmap(),
                 contentDescription = stringResource(R.string.image_1),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(ar1)
+                    .fillMaxSize()
                     .graphicsLayer { this.alpha = alpha1 },
-                contentScale = ContentScale.FillBounds
+                contentScale = ContentScale.Fit
             )
 
-            val ar2 = remember(bitmap2) { bitmap2.width.toFloat() / bitmap2.height.toFloat() }
             Image(
                 bitmap = bitmap2.asImageBitmap(),
                 contentDescription = stringResource(R.string.image_2),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(ar2)
+                    .fillMaxSize()
                     .graphicsLayer {
                         this.alpha = alpha2
                         this.blendMode = blendMode
                     },
-                contentScale = ContentScale.FillBounds
+                contentScale = ContentScale.Fit
             )
         } else {
             Text(stringResource(R.string.loading_images))
@@ -320,7 +317,8 @@ fun BlendSettings(viewModel: SharedViewModel) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         options.forEach { (label, mode) ->
@@ -379,7 +377,7 @@ fun AdjustmentSlider(label: String, value: Float, onValueChange: (Float) -> Unit
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(progress)
-                            .fillMaxHeight()
+                            .fillMaxSize()
                             .background(
                                 color = colors.activeTrackColor,
                                 shape = RoundedCornerShape(50)

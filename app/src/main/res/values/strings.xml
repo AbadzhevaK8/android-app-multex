@@ -46,12 +46,15 @@
     <string name="showcase_rotate_image_message">Use these buttons to rotate the image.</string>
     <string name="showcase_go_to_editor_title">Continue</string>
     <string name="showcase_go_to_editor_message">Once you have selected two images, tap here to proceed to the editor.</string>
-    <string name="showcase_editor_tabs_title">Image and Blend Settings</string>
-    <string name="showcase_editor_tabs_message">Switch between these tabs to adjust each image individually or to change the blend mode.</string>
-    <string name="showcase_adjustment_sliders_title">Adjustments</string>
-    <string name="showcase_adjustment_sliders_message">Use these sliders to fine-tune the appearance of your images.</string>
-    <string name="showcase_blend_modes_title">Blend Modes</string>
-    <string name="showcase_blend_modes_message">Select a blend mode to change how the images are combined.</string>
-    <string name="showcase_action_buttons_title">Final Actions</string>
-    <string name="showcase_action_buttons_message">Use these buttons to go back, reset changes, share, or save your final creation.</string>
+
+    <!-- Strings for Editor Screen Showcase -->
+    <string name="showcase_editor_preview_title">Image Preview</string>
+    <string name="showcase_editor_preview_message">This is where your combined images are displayed. The final result will be captured from this view.</string>
+    <string name="showcase_editor_tabs_title">Editor Controls</string>
+    <string name="showcase_editor_tabs_message">Switch between tabs to adjust settings for each image or the blending mode.</string>
+    <string name="showcase_editor_settings_title">Adjustment Sliders</string>
+    <string name="showcase_editor_settings_message">Use these sliders to fine-tune brightness, contrast, and other properties.</string>
+    <string name="showcase_editor_actions_title">Final Actions</string>
+    <string name="showcase_editor_actions_message">Use these buttons to go back, reset all edits, share, or save your final image.</string>
+    <string name="opacity">Opacity</string>
 </resources>
