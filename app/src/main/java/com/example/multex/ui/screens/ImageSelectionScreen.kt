@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -125,6 +126,7 @@ fun IntroShowcaseScope.ImageSelectionContent(
                     rotation = rotation1,
                     contentDescription = stringResource(R.string.select_image_1),
                     onClick = launcher1,
+                    testTag = "image_picker_1",
                     modifier = Modifier.introShowCaseTarget(
                         index = 0,
                         content = {
@@ -211,6 +213,7 @@ fun IntroShowcaseScope.ImageSelectionContent(
                     rotation = rotation2,
                     contentDescription = stringResource(R.string.select_image_2),
                     onClick = launcher2,
+                    testTag = "image_picker_2",
                     modifier = Modifier.introShowCaseTarget(
                         index = 1,
                         content = {
@@ -283,7 +286,8 @@ fun ImagePickerBox(
     rotation: Float,
     contentDescription: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    testTag: String = ""
 ) {
     val imageModifier = Modifier
         .size(120.dp)
@@ -293,7 +297,8 @@ fun ImagePickerBox(
     Box(
         modifier = modifier
             .clickable(onClick = onClick)
-            .then(imageModifier),
+            .then(imageModifier)
+            .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier),
         contentAlignment = Alignment.Center
     ) {
         Image(
