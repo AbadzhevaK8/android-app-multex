@@ -311,7 +311,12 @@ fun BlendSettings(viewModel: SharedViewModel) {
     val options = listOf(
         stringResource(R.string.screen) to androidx.compose.ui.graphics.BlendMode.Screen,
         stringResource(R.string.multiply) to androidx.compose.ui.graphics.BlendMode.Multiply,
-        stringResource(R.string.overlay) to androidx.compose.ui.graphics.BlendMode.Overlay
+        stringResource(R.string.overlay) to androidx.compose.ui.graphics.BlendMode.Overlay,
+        stringResource(R.string.lighten) to androidx.compose.ui.graphics.BlendMode.Lighten,
+        stringResource(R.string.darken) to androidx.compose.ui.graphics.BlendMode.Darken,
+        stringResource(R.string.difference) to androidx.compose.ui.graphics.BlendMode.Difference,
+        stringResource(R.string.color) to androidx.compose.ui.graphics.BlendMode.Color,
+        stringResource(R.string.hard_light) to androidx.compose.ui.graphics.BlendMode.Hardlight
     )
 
     Row(

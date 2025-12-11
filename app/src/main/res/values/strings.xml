@@ -57,4 +57,9 @@
     <string name="showcase_editor_actions_title">Final Actions</string>
     <string name="showcase_editor_actions_message">Use these buttons to go back, reset all edits, share, or save your final image.</string>
     <string name="opacity">Opacity</string>
+    <string name="lighten">Lighten</string>
+    <string name="darken">Darken</string>
+    <string name="difference">Difference</string>
+    <string name="color">Color</string>
+    <string name="hard_light">Hard Light</string>
 </resources>

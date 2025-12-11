@@ -1,5 +1,6 @@
 package com.example.multex
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.ContentValues
 import android.content.Context
@@ -81,11 +82,13 @@ class SharedViewModel(application: Application) : AndroidViewModel(application) 
     private val _editorIntroShown = MutableStateFlow(prefs.getBoolean("editor_intro_shown", false))
     val editorIntroShown: StateFlow<Boolean> = _editorIntroShown.asStateFlow()
 
+    @SuppressLint("UseKtx")
     fun onImageSelectionIntroShown() {
         _imageSelectionIntroShown.value = true
         prefs.edit().putBoolean("image_selection_intro_shown", true).apply()
     }
 
+    @SuppressLint("UseKtx")
     fun onEditorIntroShown() {
         _editorIntroShown.value = true
         prefs.edit().putBoolean("editor_intro_shown", true).apply()

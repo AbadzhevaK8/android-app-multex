@@ -57,4 +57,9 @@
     <string name="showcase_editor_actions_title">Действия</string>
     <string name="showcase_editor_actions_message">Используйте эти кнопки, чтобы вернуться, сбросить все изменения, поделиться или сохранить окончательное изображение.</string>
     <string name="opacity">Прозрачность</string>
+    <string name="lighten">Замена светлым</string>
+    <string name="darken">Замена темным</string>
+    <string name="difference">Разница</string>
+    <string name="color">Цветность</string>
+    <string name="hard_light">Жесткий свет</string>
 </resources>
