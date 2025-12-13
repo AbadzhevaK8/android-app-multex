@@ -1,15 +1,16 @@
 @file:Suppress("OPT_IN_USAGE")
 @file:OptIn(ExperimentalComposeUiApi::class, ExperimentalComposeApi::class)
 
-package com.example.multex.ui.screens
+package com.k8abadzheva.multex.ui.screens
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -61,8 +62,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.multex.R
-import com.example.multex.SharedViewModel
+import com.k8abadzheva.multex.R
+import com.k8abadzheva.multex.SharedViewModel
 import dev.shreyaspatil.capturable.capturable
 import dev.shreyaspatil.capturable.controller.rememberCaptureController
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -304,7 +305,7 @@ fun Image2Settings(viewModel: SharedViewModel) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun BlendSettings(viewModel: SharedViewModel) {
     val blendMode by viewModel.blendMode.collectAsState()
@@ -319,12 +320,12 @@ fun BlendSettings(viewModel: SharedViewModel) {
         stringResource(R.string.hard_light) to androidx.compose.ui.graphics.BlendMode.Hardlight
     )
 
-    Row(
+    FlowRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp)
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(vertical = 8.dp, horizontal = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         options.forEach { (label, mode) ->
             val selected = blendMode == mode
@@ -334,7 +335,9 @@ fun BlendSettings(viewModel: SharedViewModel) {
                     val newMode = if (selected) androidx.compose.ui.graphics.BlendMode.SrcOver else mode
                     viewModel.onBlendModeChange(newMode)
                 },
-                label = { Text(label) }
+                label = {
+                    Text(text = label)
+                }
             )
         }
     }

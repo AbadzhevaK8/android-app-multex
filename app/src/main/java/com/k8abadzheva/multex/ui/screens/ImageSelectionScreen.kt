@@ -1,4 +1,4 @@
-package com.example.multex.ui.screens
+package com.k8abadzheva.multex.ui.screens
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -48,8 +48,8 @@ import coil.compose.AsyncImage
 import com.canopas.lib.showcase.IntroShowcase
 import com.canopas.lib.showcase.IntroShowcaseScope
 import com.canopas.lib.showcase.component.rememberIntroShowcaseState
-import com.example.multex.R
-import com.example.multex.SharedViewModel
+import com.k8abadzheva.multex.R
+import com.k8abadzheva.multex.SharedViewModel
 
 @Composable
 fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewModel) {

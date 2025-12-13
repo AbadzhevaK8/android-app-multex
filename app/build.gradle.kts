@@ -10,27 +10,31 @@ plugins {
 
 val keystorePropertiesFile = rootProject.file("keystore.properties")
 val keystoreProperties = Properties()
-keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+if (keystorePropertiesFile.exists() && keystorePropertiesFile.isFile) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
 
 android {
-    namespace = "com.example.multex"
+    namespace = "com.k8abadzheva.multex"
     compileSdk = 36
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
+            if (keystorePropertiesFile.exists() && keystoreProperties.getProperty("storeFile") != null) {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+            }
         }
     }
 
     defaultConfig {
-        applicationId = "com.example.multex"
+        applicationId = "com.k8abadzheva.multex"
         minSdk = 24
         targetSdk = 36
         versionCode = 2
-        versionName = "1.0.1"
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,7 +46,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            if (keystorePropertiesFile.exists() && keystoreProperties.getProperty("storeFile") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
         }
     }
     compileOptions {

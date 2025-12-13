@@ -1,4 +1,4 @@
-package com.example.multex
+package com.k8abadzheva.multex
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag

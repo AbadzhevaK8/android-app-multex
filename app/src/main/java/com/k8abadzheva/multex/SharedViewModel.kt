@@ -1,4 +1,4 @@
-package com.example.multex
+package com.k8abadzheva.multex
 
 import android.annotation.SuppressLint
 import android.app.Application

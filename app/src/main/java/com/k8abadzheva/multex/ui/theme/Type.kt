@@ -1,4 +1,4 @@
-package com.example.multex.ui.theme
+package com.k8abadzheva.multex.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

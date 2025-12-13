@@ -1,4 +1,4 @@
-package com.example.multex
+package com.k8abadzheva.multex
 
 import android.app.Application
 import android.content.SharedPreferences

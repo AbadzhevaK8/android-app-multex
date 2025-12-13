@@ -1,4 +1,4 @@
-package com.example.multex
+package com.k8abadzheva.multex
 
 import android.graphics.Color
 import android.os.Bundle
@@ -14,10 +14,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.multex.ui.screens.EditorScreen
-import com.example.multex.ui.screens.ImageSelectionScreen
-import com.example.multex.ui.screens.SplashScreen
-import com.example.multex.ui.theme.MultexTheme
+import com.k8abadzheva.multex.ui.screens.EditorScreen
+import com.k8abadzheva.multex.ui.screens.ImageSelectionScreen
+import com.k8abadzheva.multex.ui.screens.SplashScreen
+import com.k8abadzheva.multex.ui.theme.MultexTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
