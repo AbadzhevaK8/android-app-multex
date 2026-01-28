@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Multex</string>
     <string name="image_1">Immagine 1</string>
@@ -46,8 +47,6 @@
     <string name="showcase_rotate_image_message">Usa questi pulsanti per ruotare l\'immagine.</string>
     <string name="showcase_go_to_editor_title">Continua</string>
     <string name="showcase_go_to_editor_message">Una volta selezionate due immagini, tocca qui per procedere all\'editor.</string>
-
-    <!-- Strings for Editor Screen Showcase -->
     <string name="showcase_editor_preview_title">Anteprima immagine</string>
     <string name="showcase_editor_preview_message">Qui vengono visualizzate le immagini combinate. Il risultato finale verrà catturato da questa vista.</string>
     <string name="showcase_editor_tabs_title">Controlli dell\'editor</string>
@@ -62,4 +61,5 @@
     <string name="difference">Differenza</string>
     <string name="color">Colore</string>
     <string name="hard_light">Luce intensa</string>
+    <string name="close_button" translatable="false">Chiudi</string>
 </resources>
