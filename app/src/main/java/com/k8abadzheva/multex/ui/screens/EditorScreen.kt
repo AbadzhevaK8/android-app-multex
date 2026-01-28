@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -52,6 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ExperimentalGraphicsApi
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -114,16 +116,22 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
             .windowInsetsPadding(WindowInsets.safeDrawing),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ImagePreview(
-            bitmap1,
-            bitmap2,
-            blendMode,
-            alpha1,
-            alpha2,
+        Box(
             modifier = Modifier
                 .weight(7f)
-                .capturable(captureController)
-        )
+                .fillMaxWidth()
+                .background(Color.Black),
+            contentAlignment = Alignment.Center
+        ) {
+            ImagePreview(
+                bitmap1,
+                bitmap2,
+                blendMode,
+                alpha1,
+                alpha2,
+                modifier = Modifier.capturable(captureController)
+            )
+        }
 
         Column(modifier = Modifier
             .weight(3f)
@@ -183,35 +191,38 @@ fun ImagePreview(
     alpha2: Float,
     modifier: Modifier = Modifier
 ) {
+    // Внутренний Box сжимается до размеров первого фото
     Box(
         modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background),
+            .wrapContentSize()
+            .background(Color.Transparent),
         contentAlignment = Alignment.Center
     ) {
         if (bitmap1 != null && bitmap2 != null) {
+            // ИЗОБРАЖЕНИЕ 1: Определяет размер холста
             Image(
                 bitmap = bitmap1.asImageBitmap(),
                 contentDescription = stringResource(R.string.image_1),
                 modifier = Modifier
-                    .fillMaxSize()
+                    .wrapContentSize()
                     .graphicsLayer { this.alpha = alpha1 },
                 contentScale = ContentScale.Fit
             )
 
+            // ИЗОБРАЖЕНИЕ 2: Заполняет область без искажения пропорций
             Image(
                 bitmap = bitmap2.asImageBitmap(),
                 contentDescription = stringResource(R.string.image_2),
                 modifier = Modifier
-                    .fillMaxSize()
+                    .matchParentSize()
                     .graphicsLayer {
                         this.alpha = alpha2
                         this.blendMode = blendMode
                     },
-                contentScale = ContentScale.Fit
+                contentScale = ContentScale.Crop // Не искажает, а обрезает края под формат первого фото
             )
         } else {
-            Text(stringResource(R.string.loading_images))
+            Text(stringResource(R.string.loading_images), color = Color.White)
         }
     }
 }
@@ -228,8 +239,7 @@ fun EditorTabs(viewModel: SharedViewModel) {
                 Tab(selected = tabIndex == index, onClick = { tabIndex = index }, text = { Text(title) })
             }
         }
-        Column(modifier = Modifier
-            .fillMaxWidth()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             when (tabIndex) {
                 0 -> Image1Settings(viewModel)
                 1 -> Image2Settings(viewModel)
@@ -247,19 +257,17 @@ fun Image1Settings(viewModel: SharedViewModel) {
     val saturation by viewModel.saturation1.collectAsState()
     val highlights by viewModel.highlights1.collectAsState()
     val shadows by viewModel.shadows1.collectAsState()
-    val rotation1 by viewModel.rotation1.collectAsState()
+    val rotation by viewModel.rotation1.collectAsState()
 
     Column(Modifier.padding(vertical = 8.dp)) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             IconButton(onClick = { viewModel.rotateImage1() }) {
                 Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = stringResource(R.string.rotate_90_degrees))
             }
-            IconButton(onClick = { viewModel.resetRotation1() }, enabled = rotation1 != 0f) {
+            IconButton(onClick = { viewModel.resetRotation1() }, enabled = rotation != 0f) {
                 Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = stringResource(R.string.reset_rotation))
             }
         }
@@ -280,19 +288,17 @@ fun Image2Settings(viewModel: SharedViewModel) {
     val saturation by viewModel.saturation2.collectAsState()
     val highlights by viewModel.highlights2.collectAsState()
     val shadows by viewModel.shadows2.collectAsState()
-    val rotation2 by viewModel.rotation2.collectAsState()
+    val rotation by viewModel.rotation2.collectAsState()
 
     Column(Modifier.padding(vertical = 8.dp)) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             IconButton(onClick = { viewModel.rotateImage2() }) {
                 Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = stringResource(R.string.rotate_90_degrees))
             }
-            IconButton(onClick = { viewModel.resetRotation2() }, enabled = rotation2 != 0f) {
+            IconButton(onClick = { viewModel.resetRotation2() }, enabled = rotation != 0f) {
                 Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = stringResource(R.string.reset_rotation))
             }
         }
@@ -305,7 +311,7 @@ fun Image2Settings(viewModel: SharedViewModel) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BlendSettings(viewModel: SharedViewModel) {
     val blendMode by viewModel.blendMode.collectAsState()
@@ -321,78 +327,23 @@ fun BlendSettings(viewModel: SharedViewModel) {
     )
 
     FlowRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        modifier = Modifier.fillMaxWidth().padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         options.forEach { (label, mode) ->
-            val selected = blendMode == mode
             FilterChip(
-                selected = selected,
-                onClick = {
-                    val newMode = if (selected) androidx.compose.ui.graphics.BlendMode.SrcOver else mode
-                    viewModel.onBlendModeChange(newMode)
-                },
-                label = {
-                    Text(text = label)
-                }
+                selected = blendMode == mode,
+                onClick = { viewModel.onBlendModeChange(mode) },
+                label = { Text(label) }
             )
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdjustmentSlider(label: String, value: Float, onValueChange: (Float) -> Unit, valueRange: ClosedFloatingPointRange<Float>) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-        Text(text = "$label: ${String.format(Locale.US, "%.2f", value)}", style = MaterialTheme.typography.labelMedium)
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            valueRange = valueRange,
-            thumb = {
-                Box(
-                    modifier = Modifier
-                        .width(2.dp)
-                        .height(16.dp)
-                        .background(
-                            color = SliderDefaults.colors().thumbColor,
-                            shape = RectangleShape
-                        )
-                )
-            },
-            track = { sliderState ->
-                val colors = SliderDefaults.colors()
-                val progress = (sliderState.value - valueRange.start) / (valueRange.endInclusive - valueRange.start)
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(2.dp)
-                ) {
-                    // Inactive track
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                color = colors.inactiveTrackColor,
-                                shape = RoundedCornerShape(50)
-                            )
-                    )
-                    // Active track
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(progress)
-                            .fillMaxSize()
-                            .background(
-                                color = colors.activeTrackColor,
-                                shape = RoundedCornerShape(50)
-                            )
-                    )
-                }
-            }
-        )
+    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+        Text(text = "$label: ${String.format(Locale.US, "%.2f", value)}", style = MaterialTheme.typography.labelSmall)
+        Slider(value = value, onValueChange = onValueChange, valueRange = valueRange)
     }
 }
