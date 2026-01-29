@@ -61,5 +61,4 @@
     <string name="difference">Differenza</string>
     <string name="color">Colore</string>
     <string name="hard_light">Luce intensa</string>
-    <string name="close_button" translatable="false">Chiudi</string>
 </resources>
