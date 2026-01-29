@@ -4,14 +4,8 @@
 package com.k8abadzheva.multex.ui.screens
 
 import android.graphics.Bitmap
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,7 +45,6 @@ import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -81,7 +74,6 @@ import java.util.Locale
 @Composable
 fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
     val context = LocalContext.current
-    var showUI by remember { mutableStateOf(true) }
 
     val imageUri1 by viewModel.imageUri1.collectAsState()
     val imageUri2 by viewModel.imageUri2.collectAsState()
@@ -124,13 +116,9 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
     ) {
         Box(
             modifier = Modifier
-                .weight(if (showUI) 7f else 1f)
+                .weight(7f)
                 .fillMaxWidth()
-                .background(Color.Black)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null
-                ) { showUI = !showUI },
+                .background(MaterialTheme.colorScheme.surface),
             contentAlignment = Alignment.Center
         ) {
             ImagePreview(
@@ -143,58 +131,49 @@ fun EditorScreen(navController: NavController, viewModel: SharedViewModel) {
             )
         }
 
-        AnimatedVisibility(
-            visible = showUI,
-            enter = fadeIn(animationSpec = tween(300)),
-            exit = fadeOut(animationSpec = tween(300)),
-            modifier = Modifier.weight(3f)
-        ) {
-            Column {
-                Column(modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())) {
-                    EditorTabs(viewModel = viewModel)
-                }
+        Column(modifier = Modifier
+            .weight(3f)
+            .verticalScroll(rememberScrollState())) {
+            EditorTabs(viewModel = viewModel)
+        }
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                        .padding(horizontal = 4.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                    }
-                    IconButton(onClick = { viewModel.resetSettings() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.reset))
-                    }
-                    IconButton(onClick = {
-                        coroutineScope.launch {
-                            try {
-                                val bitmap = captureController.captureAsync().await()
-                                viewModel.shareImage(context, bitmap.asAndroidBitmap())
-                            } catch (e: Exception) {
-                                viewModel.showToast(context, "Capture failed: ${e.message}")
-                            }
-                        }
-                    }) {
-                        Icon(Icons.Default.Share, contentDescription = stringResource(R.string.share))
-                    }
-                    IconButton(onClick = {
-                        coroutineScope.launch {
-                            try {
-                                val bitmap = captureController.captureAsync().await()
-                                viewModel.saveImage(context, bitmap.asAndroidBitmap())
-                            } catch (e: Exception) {
-                                viewModel.showToast(context, "Capture failed: ${e.message}")
-                            }
-                        }
-                    }) {
-                        Icon(Icons.Default.Done, contentDescription = stringResource(R.string.save))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .padding(horizontal = 4.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+            }
+            IconButton(onClick = { viewModel.resetSettings() }) {
+                Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.reset))
+            }
+            IconButton(onClick = {
+                coroutineScope.launch {
+                    try {
+                        val bitmap = captureController.captureAsync().await()
+                        viewModel.shareImage(context, bitmap.asAndroidBitmap())
+                    } catch (e: Exception) {
+                        viewModel.showToast(context, "Capture failed: ${e.message}")
                     }
                 }
+            }) {
+                Icon(Icons.Default.Share, contentDescription = stringResource(R.string.share))
+            }
+            IconButton(onClick = {
+                coroutineScope.launch {
+                    try {
+                        val bitmap = captureController.captureAsync().await()
+                        viewModel.saveImage(context, bitmap.asAndroidBitmap())
+                    } catch (e: Exception) {
+                        viewModel.showToast(context, "Capture failed: ${e.message}")
+                    }
+                }
+            }) {
+                Icon(Icons.Default.Done, contentDescription = stringResource(R.string.save))
             }
         }
     }
@@ -210,6 +189,7 @@ fun ImagePreview(
     alpha2: Float,
     modifier: Modifier = Modifier
 ) {
+    // Внутренний Box сжимается до размеров первого фото
     Box(
         modifier = modifier
             .wrapContentSize()
@@ -217,6 +197,7 @@ fun ImagePreview(
         contentAlignment = Alignment.Center
     ) {
         if (bitmap1 != null && bitmap2 != null) {
+            // ИЗОБРАЖЕНИЕ 1: Определяет размер холста
             Image(
                 bitmap = bitmap1.asImageBitmap(),
                 contentDescription = stringResource(R.string.image_1),
@@ -226,6 +207,7 @@ fun ImagePreview(
                 contentScale = ContentScale.Fit
             )
 
+            // ИЗОБРАЖЕНИЕ 2: Заполняет область без искажения пропорций
             Image(
                 bitmap = bitmap2.asImageBitmap(),
                 contentDescription = stringResource(R.string.image_2),
@@ -235,7 +217,7 @@ fun ImagePreview(
                         this.alpha = alpha2
                         this.blendMode = blendMode
                     },
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop // Не искажает, а обрезает края под формат первого фото
             )
         } else {
             Text(stringResource(R.string.loading_images), color = Color.White)
