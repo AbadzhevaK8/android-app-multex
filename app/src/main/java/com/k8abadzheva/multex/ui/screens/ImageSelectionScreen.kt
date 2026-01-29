@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -53,20 +54,22 @@ import com.k8abadzheva.multex.SharedViewModel
 
 @Composable
 fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewModel) {
+    val context = LocalContext.current
     val imageUri1 by viewModel.imageUri1.collectAsState()
     val imageUri2 by viewModel.imageUri2.collectAsState()
     val rotation1 by viewModel.rotation1.collectAsState()
     val rotation2 by viewModel.rotation2.collectAsState()
     val introShown by viewModel.imageSelectionIntroShown.collectAsState()
 
+    // Возвращаемся к GetContent — это самый стабильный метод на большинстве Android-устройств
     val launcher1 = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
-        onResult = { uri: Uri? -> viewModel.onUri1Change(uri) }
+        onResult = { uri: Uri? -> viewModel.onUri1Change(context, uri) }
     )
 
     val launcher2 = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
-        onResult = { uri: Uri? -> viewModel.onUri2Change(uri) }
+        onResult = { uri: Uri? -> viewModel.onUri2Change(context, uri) }
     )
 
     val introShowcaseState = rememberIntroShowcaseState()
@@ -86,8 +89,12 @@ fun ImageSelectionScreen(navController: NavController, viewModel: SharedViewMode
             imageUri2 = imageUri2,
             rotation1 = rotation1,
             rotation2 = rotation2,
-            launcher1 = { launcher1.launch("image/*") },
-            launcher2 = { launcher2.launch("image/*") }
+            launcher1 = { 
+                launcher1.launch("image/*") 
+            },
+            launcher2 = { 
+                launcher2.launch("image/*") 
+            }
         )
     }
 }

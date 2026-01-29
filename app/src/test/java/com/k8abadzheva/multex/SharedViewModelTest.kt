@@ -65,14 +65,16 @@ class SharedViewModelTest {
     @Test
     fun onUri1Change_updatesImageUri1() {
         val uri = Uri.parse("file://test/uri1")
-        viewModel.onUri1Change(uri)
+        viewModel.onUri1Change(application, uri)
+        // In tests, copyUriToInternalStorage will likely return null due to lack of real ContentResolver,
+        // but the code falls back to the original URI.
         assertEquals(uri, viewModel.imageUri1.value)
     }
 
     @Test
     fun onUri2Change_updatesImageUri2() {
         val uri = Uri.parse("file://test/uri2")
-        viewModel.onUri2Change(uri)
+        viewModel.onUri2Change(application, uri)
         assertEquals(uri, viewModel.imageUri2.value)
     }
 
@@ -80,8 +82,8 @@ class SharedViewModelTest {
     fun swapImages_swapsUrisAndRotations() {
         val uri1 = Uri.parse("file://test/uri1")
         val uri2 = Uri.parse("file://test/uri2")
-        viewModel.onUri1Change(uri1)
-        viewModel.onUri2Change(uri2)
+        viewModel.onUri1Change(application, uri1)
+        viewModel.onUri2Change(application, uri2)
         viewModel.rotateImage1()
 
         val initialUri1 = viewModel.imageUri1.value
